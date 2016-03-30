@@ -4,7 +4,7 @@
     {
         window.MediaSource = window.MediaSource || window.WebKitMediaSource;
 
-        // supported codecs: 'video/mp4; codecs="avc1.64001F"' / 'video/mp4; codecs="aac,h264"' / 'video/webm; codecs="vorbis,vp8"'
+        // supported codecs: 'video/mp4; codecs="avc1.64001F"' / 'video/webm; codecs="vorbis,vp8"' / video/mp4; codecs=”avc1.42E01E,mp4a.40.2″
         var mediaSource = new MediaSource(),
             sourceBuffer,
             chunks = [],
@@ -27,6 +27,7 @@
         var ws = new WebSocket("ws://" + window.location.host + "/stream");
         ws.binaryType = 'arraybuffer';
         sourceBuffer = mediaSource.addSourceBuffer(codecs);
+        sourceBuffer.mode = 'sequence';
         addSourceBufferEvents();
 
         ws.onmessage = function(evt)
@@ -46,7 +47,6 @@
         console.log('Source ended');
     }
 
-    // TODO: Append new segments correctly to the end of the sourcebuffer
     function fillSourceBuffer()
     {
         if (!sourceBuffer.updating)
@@ -76,12 +76,6 @@
     function onError(e)
     {
         console.log("Error: " + e);
-    }
-
-    function stopInterval()
-    {
-        console.log('STOPPING INTERVAL');
-        clearInterval(theInterval);
     }
 
     // Logging functions for debugging
