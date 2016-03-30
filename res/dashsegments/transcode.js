@@ -10,6 +10,10 @@ var webcamStreamPath = '../webcamstream/',
     mp4SegmentsPath = '../mp4segments/',
     dashsegmentsPath = './';
 
+console.log('Start watching following folders:');
+console.log('- ' + webcamStreamPath);
+console.log('- ' + mp4SegmentsPath);
+
 // helper vars
 var transcodeToMp4Queue = [],
     transcodeToDASHQueue = [],

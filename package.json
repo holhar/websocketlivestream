@@ -1,7 +1,7 @@
 {
   "name": "websocketeval",
   "version": "0.0.1",
-  "description": "A simple prototype websocket app for evaluating and testing the websocket protocol",
+  "description": "A prototype application that provides push-based live streaming capabilities with WebSockets",
   "main": "app.js",
   "dependencies": {
     "body-parser": "1.*",
