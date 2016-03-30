@@ -1,0 +1,30 @@
+{
+  "name": "websocketeval",
+  "version": "0.0.1",
+  "description": "A simple prototype websocket app for evaluating and testing the websocket protocol",
+  "main": "app.js",
+  "dependencies": {
+    "body-parser": "1.*",
+    "cluster": "0.7.7",
+    "express": "4.*",
+    "fluent-ffmpeg": "2.0.1",
+    "jade": "1.*",
+    "sticky-session": "1.0.2",
+    "underscore": "1.8.3",
+    "ws": "0.8.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node app.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/hash-developer/websocketeval.git"
+  },
+  "author": "Holger Harms",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/hash-developer/websocketeval/issues"
+  }
+}

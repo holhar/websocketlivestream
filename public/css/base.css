@@ -1,0 +1,26 @@
+.jumbotron {
+    padding-bottom: 8px;
+    padding-top: 8px;
+}
+
+.jumbotron h1 {
+    font-size: 50px;
+}
+
+.header h3 {
+    float: left;
+    border-bottom: none;
+    margin-top: 11px;
+}
+
+.nav-tabs {
+    float: right;
+}
+
+#time {
+    margin-left: 30px;
+}
+
+#container {
+    margin-left:30px;
+}

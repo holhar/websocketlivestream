@@ -1,0 +1,20 @@
+doctype html
+html
+  head
+    title #{title}
+    meta(charset="UTF-8")
+    link(rel = 'stylesheet', href = '/css/bootstrap.min.css')
+    link(rel = 'stylesheet', href = '/css/base.css')
+  body
+    div(class='container')
+        div(class='header clearfix')
+            h3(class='text-muted') Realtime Web-Communication
+            ul(class='nav nav-tabs')
+                li(role='presentation')
+                    a(href='http://localhost:8080/') Home
+                li(role='presentation')
+                    a(href='http://localhost:8080/stream') WS-Video Livestream
+        div(class='jumbotron')
+            h1 #{title}
+            p(class='lead') #{teaser}
+        block content
