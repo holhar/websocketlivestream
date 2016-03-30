@@ -12,7 +12,7 @@ var sticky = require('sticky-session');
 // helper vars
 var mpgDashSegmentsPath = 'res/dashsegments/',
     broadcastQueue = [],
-    isBroadcasting = false; // Prototype 1
+    isBroadcasting = false;
 
 // init and configure express webserver
 var app = express();
@@ -56,7 +56,7 @@ if (!sticky.listen(httpServer, 8080)) {
 app.get('/', function (req,res){
   res.render('index', {
         title: 'WebSocket Livestream',
-        teaser: 'The prototype provides push-based live streaming capabilities with WebSockets.'
+        teaser: 'A prototype application that provides push-based live streaming capabilities with WebSockets.'
     });
 });
 app.get('/stream', function(req, res) {
@@ -77,32 +77,35 @@ function startPlaying()
         },
         function(curr, prev)
         {
-            addToQueue( getMostRecentFile( mpgDashSegmentsPath, /webcam_part\d+_dashinit\.mp4/i ), broadcastQueue);
+            mostRecentFile = getMostRecentFile( mpgDashSegmentsPath, /webcam_part\d+_dashinit\.mp4/i );
 
-            if(broadcastQueue.length !== 0 && isBroadcasting === false)
-            {
-                console.log('Start broadcasting');
-                console.log('Read-Stream: '+mpgDashSegmentsPath + broadcastQueue[0]);
-                var readStream = fs.createReadStream(mpgDashSegmentsPath + broadcastQueue[0] );
-                var count = 0;
+            if(typeof mostRecentFile !== 'number') {
+                addToQueue(mostRecentFile, broadcastQueue);
 
-                readStream.on('data', function(data)
+                if(isBroadcasting === false && broadcastQueue.length !== 0)
                 {
                     isBroadcasting = true;
-                    count++;
-                    // logReadStreamData(data.length, count, sockets.length);
-                    sockets.forEach(function(ws) {
-                        if (ws.readyState == 1) {
-                            ws.send(data, { binary: true, mask: false });
-                        }
-                    });
-                });
+                    console.log('Broadcasting segment: '+ mpgDashSegmentsPath + broadcastQueue[0]);
 
-                readStream.on('end', function() {
-                    console.log('ReadStream for ' + broadcastQueue[0] + ' ended');
-                    broadcastQueue.shift();
-                    isBroadcasting = false;
-                });
+                    var readStream = fs.createReadStream(mpgDashSegmentsPath + broadcastQueue[0] );
+                    var count = 0;
+
+                    readStream.on('data', function(data)
+                    {
+                        count++;
+                        // logReadStreamData(data.length, count, sockets.length);
+                        sockets.forEach(function(ws) {
+                            if (ws.readyState == 1) {
+                                ws.send(data, { binary: true, mask: false });
+                            }
+                        });
+                    });
+
+                    readStream.on('end', function() {
+                        broadcastQueue.shift();
+                        isBroadcasting = false;
+                    });
+                }
             }
         }
     );
@@ -123,7 +126,6 @@ function addToQueue(MostRecentFile, transcodingQueue) {
             transcodingQueue.push(MostRecentFile);
         }
     }
-    console.log('Added segment to queue: '+transcodingQueue);
 }
 
 // Return only base file name without dir
@@ -145,7 +147,6 @@ function getMostRecentFile(dir, regexp) {
 
         // ctime = creation time is used
         // replace with mtime for modification time
-        console.log('Most recent file: '+fs.statSync(fullpath).ctime);
         return fs.statSync(fullpath).ctime;
     });
 }
