@@ -37,7 +37,7 @@ To get the prototype running follow these three steps:
 From inside the project's root directory:
 
 ```
-$ npm app.js
+$ node app.js
 ```
 
 ##### Start Transcoding Script
