@@ -4,6 +4,7 @@ var path = require('path');
 var bodyParser = require('body-parser');
 var fs = require('fs');
 var _ = require('underscore');
+var lastBroadcastElement;
 
 // enable usage of all available cpu cores
 var cluster = require('cluster'); // required if worker id is needed
@@ -43,18 +44,17 @@ if (!sticky.listen(httpServer, 8080)) {
     wss.on('connection', function(ws) {
         sockets.push(ws);
 
-        if (ws.upgradeReq.url === '/stream') {
-            startPlaying();
-            ws.on('close', function() {
-                ws = null;
-            });
-        }
+        startWatcher();
+
+        ws.on('close', function() {
+            ws = null;
+        });
     });
 }
 
 // routes
-app.get('/', function (req,res){
-  res.render('index', {
+app.get('/', function(req, res) {
+    res.render('index', {
         title: 'WebSocket Livestream',
         teaser: 'A prototype application that provides push-based live streaming capabilities with WebSockets.'
     });
@@ -67,57 +67,67 @@ app.get('/stream', function(req, res) {
 });
 
 // functions
-function startPlaying()
+function startWatcher()
 {
-    fs.watch(
-        mpgDashSegmentsPath,
-        {
-            persistent: true,
-            interval: 1000
-        },
-        function(curr, prev)
-        {
-            mostRecentFile = getMostRecentFile( mpgDashSegmentsPath, /webcam_part\d+_dashinit\.mp4/i );
+    broadcast(2);
+    setTimeout(function() {
+        broadcast(1);
+    }, 5000);
 
-            if(typeof mostRecentFile !== 'number') {
-                addToQueue(mostRecentFile, broadcastQueue);
-
-                if(isBroadcasting === false && broadcastQueue.length !== 0)
-                {
-                    isBroadcasting = true;
-                    console.log('Broadcasting segment: '+ mpgDashSegmentsPath + broadcastQueue[0]);
-
-                    var readStream = fs.createReadStream(mpgDashSegmentsPath + broadcastQueue[0] );
-                    var count = 0;
-
-                    readStream.on('data', function(data)
-                    {
-                        count++;
-                        // logReadStreamData(data.length, count, sockets.length);
-                        sockets.forEach(function(ws) {
-                            if (ws.readyState == 1) {
-                                ws.send(data, { binary: true, mask: false });
-                            }
-                        });
-                    });
-
-                    readStream.on('end', function() {
-                        broadcastQueue.shift();
-                        isBroadcasting = false;
-                    });
-                }
-            }
-        }
-    );
+    fs.watch(mpgDashSegmentsPath, { persistent: true, interval: 1000 }, function(curr, prev) {
+        broadcast(1);
+    });
 }
 
-function addToQueue(MostRecentFile, transcodingQueue) {
+function broadcast(chunkOffset)
+{
+    mostRecentFile = getMostRecentFile(mpgDashSegmentsPath, /webcam_part\d+_dashinit\.mp4/i, chunkOffset);
+
+    if (typeof mostRecentFile === 'string')
+    {
+        addToQueue(mostRecentFile, broadcastQueue);
+
+        if (isBroadcasting === false && broadcastQueue.length !== 0)
+        {
+
+            if (lastBroadcastElement == broadcastQueue[0]) {
+                broadcastQueue.shift();
+                return;
+            }
+
+            isBroadcasting = true;
+            console.log('Broadcasting segment: ' + mpgDashSegmentsPath + broadcastQueue[0]);
+            lastBroadcastElement = broadcastQueue[0];
+
+            var readStream = fs.createReadStream(mpgDashSegmentsPath + broadcastQueue[0]);
+            var count = 0;
+
+            readStream.on('data', function(data) {
+                count++;
+                //logReadStreamData(data, count, sockets.length);
+                sockets.forEach(function(socket) {
+                    if (socket.readyState == 1) {
+                        socket.send(data, { binary: true, mask: false });
+                    }
+                });
+            });
+
+            readStream.on('end', function() {
+                broadcastQueue.shift();
+                isBroadcasting = false;
+            });
+        }
+    }
+}
+
+function addToQueue(MostRecentFile, transcodingQueue)
+{
     var match = 0;
 
-    if(transcodingQueue.length === 0) {
+    if (transcodingQueue.length === 0) {
         transcodingQueue.push(MostRecentFile);
     } else {
-        for(var i=0; i<transcodingQueue.length;i++) {
+        for (var i = 0; i < transcodingQueue.length; i++) {
             if (transcodingQueue[i] === MostRecentFile) {
                 match = 1;
             }
@@ -129,26 +139,37 @@ function addToQueue(MostRecentFile, transcodingQueue) {
 }
 
 // Return only base file name without dir
-function getMostRecentFile(dir, regexp) {
+function getMostRecentFile(dir, regexp, chunkOffset)
+{
     var files = fs.readdirSync(dir);
     var mpgSegments = [];
     var match = '';
 
-    for(var i=0; i<files.length; i++) {
-        if(files[i].match( regexp )) {
-            match = files[i].match( regexp );
-            mpgSegments.push( match[0] );
+
+
+    for (var i = 0; i < files.length; i++) {
+        if (files[i].match(regexp)) {
+            match = files[i].match(regexp);
+            mpgSegments.push(match[0]);
         }
     }
 
-    // use underscore for max()
-    return _.max(mpgSegments, function (f) {
+    // using underscore-library for finding recent file
+    mostRecentFile = _.max(mpgSegments, function(f) {
         var fullpath = path.join(dir, f);
 
         // ctime = creation time is used
         // replace with mtime for modification time
         return fs.statSync(fullpath).ctime;
     });
+
+
+    if (mpgSegments.length > chunkOffset) {
+        index = mpgSegments.indexOf(mostRecentFile);
+        return mpgSegments[index - chunkOffset];
+    } else {
+        return null;
+    }
 }
 
 function logReadStreamData(data, count, socketLength)
