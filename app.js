@@ -1,3 +1,7 @@
+/*
+    CDN Ingress Server (can also emulate Edge Server)
+*/
+
 // module dependencies
 var express = require('express');
 var path = require('path');

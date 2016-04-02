@@ -24,7 +24,8 @@
 
     function sourceOpenCallback(e)
     {
-        var ws = new WebSocket("ws://" + window.location.host + "/stream");
+        // Adjust socket URL to host IP address
+        var ws = new WebSocket('ws://' + window.location.host + '/stream');
         ws.binaryType = 'arraybuffer';
         sourceBuffer = mediaSource.addSourceBuffer(codecs);
         sourceBuffer.mode = 'sequence';
