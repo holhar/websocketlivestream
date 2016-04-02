@@ -1,5 +1,6 @@
 /*
     CDN Ingress Server (can also emulate Edge Server)
+    - process.argv[2] = port
 */
 
 // module dependencies
@@ -15,7 +16,7 @@ var cluster = require('cluster'); // required if worker id is needed
 var sticky = require('sticky-session');
 
 // helper vars
-var mpgDashSegmentsPath = 'res/dashsegments/',
+var mpgDashSegmentsPath = 'data/dashsegments/',
     broadcastQueue = [],
     isBroadcasting = false;
 
@@ -32,9 +33,10 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 
 // init node server for all available cpu cores
-if (!sticky.listen(httpServer, 8080)) {
+if (!sticky.listen(httpServer, process.argv[2]))
+{
     httpServer.once('listening', function() {
-        console.log('Started webserver, listening to port 8080');
+        console.log('Started webserver, listening to port ' + process.argv[2]);
     });
 } else {
 

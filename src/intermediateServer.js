@@ -1,11 +1,13 @@
 /*
     CDN Intermediate Server
+    - process.argv[2] = server port
+    - process.argv[3] = client ws-url + port
 */
 
 // ws-server
 var WebSocketServer = require('ws').Server;
-var wss = new WebSocketServer({ port: 8081 });
-console.log('Server running and listening to port 8081');
+var wss = new WebSocketServer({ port: process.argv[2] });
+console.log('Server running and listening to port ' + process.argv[2]);
 
 var sockets = [];
 var broadcastqueue = [];
@@ -23,8 +25,9 @@ wss.on('connection', function(ws) {
 });
 
 // ws-client
+console.log('Client trying to connect to ' + process.argv[3]);
 var WebSocket = require('ws');
-var wsc = new WebSocket('ws://192.168.42.14:8080');
+var wsc = new WebSocket('ws://' + process.argv[3]);
 
 wsc.binaryType = 'arraybuffer';
 wsc.onmessage = function(message) {

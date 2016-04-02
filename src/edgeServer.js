@@ -1,5 +1,7 @@
 /*
     CDN Edge Server
+    - process.argv[2] = server port
+    - process.argv[3] = client ws-url + port
 */
 
 // module dependencies
@@ -32,9 +34,9 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 
 // init node server for all available cpu cores
-if (!sticky.listen(httpServer, 8080)) {
+if (!sticky.listen(httpServer, process.argv[2])) {
     httpServer.once('listening', function() {
-        console.log('Started webserver, listening to port 8080');
+        console.log('Started webserver, listening to port ' + process.argv[2]);
     });
 } else {
 
@@ -56,8 +58,9 @@ if (!sticky.listen(httpServer, 8080)) {
     });
 
     // ws client
+    console.log('Client trying to connect to ' + process.argv[3]);
     var WebSocket = require('ws');
-    var wsc = new WebSocket('ws://192.168.42.15:8081');
+    var wsc = new WebSocket('ws://' + process.argv[3]);
 
     wsc.binaryType = 'arraybuffer';
     wsc.onmessage = function(message) {
