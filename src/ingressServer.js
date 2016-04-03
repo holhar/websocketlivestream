@@ -1,6 +1,7 @@
 /*
     CDN Ingress Server (can also emulate Edge Server)
     - process.argv[2] = port
+    - process.argv[3] = host for client app
 */
 
 // module dependencies
@@ -37,6 +38,7 @@ if (!sticky.listen(httpServer, process.argv[2]))
 {
     httpServer.once('listening', function() {
         console.log('Started webserver, listening to port ' + process.argv[2]);
+        console.log('host address: ' + process.argv[3] + ':' + process.argv[2]);
     });
 } else {
 
@@ -62,13 +64,15 @@ if (!sticky.listen(httpServer, process.argv[2]))
 app.get('/', function(req, res) {
     res.render('index', {
         title: 'WebSocket Livestream',
-        teaser: 'A prototype application that provides push-based live streaming capabilities with WebSockets.'
+        teaser: 'A prototype application that provides push-based live streaming capabilities with WebSockets.',
+        host: process.argv[3] + ':' + process.argv[2]
     });
 });
 app.get('/stream', function(req, res) {
     res.render('stream', {
         title: 'WS Videostream',
-        teaser: 'Videostream with WebSockets and MediaSource Plugin'
+        teaser: 'Videostream with WebSockets and MediaSource Plugin',
+        host: process.argv[3] + ':' + process.argv[2]
     });
 });
 

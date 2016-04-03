@@ -1,7 +1,8 @@
 /*
     CDN Edge Server
     - process.argv[2] = server port
-    - process.argv[3] = client ws-url + port
+    - process.argv[3] = host for client app
+    - process.argv[4] = client ws-url + port
 */
 
 // module dependencies
@@ -37,6 +38,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 if (!sticky.listen(httpServer, process.argv[2])) {
     httpServer.once('listening', function() {
         console.log('Started webserver, listening to port ' + process.argv[2]);
+        console.log('host address: ' + process.argv[3] + ':' + process.argv[2]);
     });
 } else {
 
@@ -58,9 +60,9 @@ if (!sticky.listen(httpServer, process.argv[2])) {
     });
 
     // ws client
-    console.log('Client trying to connect to ' + process.argv[3]);
+    console.log('Client trying to connect to ' + process.argv[4]);
     var WebSocket = require('ws');
-    var wsc = new WebSocket('ws://' + process.argv[3]);
+    var wsc = new WebSocket('ws://' + process.argv[4]);
 
     wsc.binaryType = 'arraybuffer';
     wsc.onmessage = function(message) {
@@ -79,13 +81,15 @@ if (!sticky.listen(httpServer, process.argv[2])) {
 app.get('/', function (req,res){
   res.render('index', {
         title: 'WebSocket Livestream',
-        teaser: 'A prototype application that provides push-based live streaming capabilities with WebSockets.'
+        teaser: 'A prototype application that provides push-based live streaming capabilities with WebSockets.',
+        host: process.argv[3] + ':' + process.argv[2]
     });
 });
 app.get('/stream', function(req, res) {
     res.render('stream', {
         title: 'WS Videostream',
-        teaser: 'Videostream with WebSockets and MediaSource Plugin'
+        teaser: 'Videostream with WebSockets and MediaSource Plugin',
+        host: process.argv[3] + ':' + process.argv[2]
     });
 });
 
