@@ -5,18 +5,22 @@
   "main": "app.js",
   "dependencies": {
     "body-parser": "1.*",
+    "chai": "^3.5.0",
     "cluster": "0.7.7",
     "express": "4.*",
     "fluent-ffmpeg": "2.0.1",
     "jade": "1.*",
+    "mocha": "^2.4.5",
+    "request": "^2.69.0",
     "sticky-session": "1.0.2",
     "underscore": "1.8.3",
     "ws": "0.8.0"
   },
-  "devDependencies": {},
+  "devDependencies": {
+
+  },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node app.js"
+    "test": "./node_modules/.bin/mocha --reporter spec"
   },
   "repository": {
     "type": "git",

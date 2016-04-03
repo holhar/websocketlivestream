@@ -126,22 +126,15 @@ function broadcast(chunkOffset)
     }
 }
 
-function addToQueue(MostRecentFile, transcodingQueue)
+function addToQueue(newSegment, broadcastQueue)
 {
-    var match = 0;
-
-    if (transcodingQueue.length === 0) {
-        transcodingQueue.push(MostRecentFile);
-    } else {
-        for (var i = 0; i < transcodingQueue.length; i++) {
-            if (transcodingQueue[i] === MostRecentFile) {
-                match = 1;
-            }
-        }
-        if(match === 0) {
-            transcodingQueue.push(MostRecentFile);
-        }
+    for(var i=0; i<broadcastQueue.length; i++) {
+        if(broadcastQueue[i] === newSegment)
+            return;
     }
+
+    broadcastQueue.push(newSegment);
+    return;
 }
 
 // Return only base file name without dir
