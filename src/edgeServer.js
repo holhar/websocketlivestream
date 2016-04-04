@@ -67,7 +67,7 @@ if (!sticky.listen(httpServer, process.argv[2])) {
     wsc.binaryType = 'arraybuffer';
     wsc.onmessage = function(message) {
         recieveCount += 1;
-        // logIncomingData(message.data, recieveCount, sockets.length);
+        logIncomingData(message.data, recieveCount, sockets.length);
 
         broadcastqueue.push(message.data);
 
@@ -97,7 +97,7 @@ app.get('/stream', function(req, res) {
 function broadcast()
 {
     sendCount += 1;
-    // logOutgoingData(broadcastqueue[0], sendCount, sockets.length);
+    logOutgoingData(broadcastqueue[0], sendCount, sockets.length);
 
     sockets.forEach(function(ws) {
         if(ws.readyState == 1) {
@@ -110,13 +110,13 @@ function broadcast()
 function logIncomingData(data, count, socketLength)
 {
     console.log("Type: " + typeof data + ", Size: " + data.length);
-    console.log('Sending chunk of data: ' + count);
-    console.log("Sending to " + socketLength + " sockets");
+    console.log('Receiving chunk of data: ' + count);
+    // console.log("Sending to " + socketLength + " sockets");
 }
 
 function logOutgoingData(data, count, socketLength)
 {
     console.log("Type: " + typeof data + ", Size: " + data.length);
     console.log('Sending chunk of data: ' + count);
-    console.log("Sending to " + socketLength + " sockets");
+    // console.log("Sending to " + socketLength + " sockets");
 }
