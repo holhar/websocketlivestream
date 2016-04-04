@@ -72,7 +72,7 @@ function transcodeToDASH() {
     segment = mp4SegmentsPath + transcodeToDASHQueue[0];
     dashFilename = transcodeToDASHQueue[0].split('.')[0];
 
-    exec('mp4box -dash 5000 -frag 1000 -rap ' + segment, puts);
+    exec('mp4box -dash 1500 -frag 500 -rap ' + segment, puts);
 
     setTimeout(function() {
         transcodeToDASHQueue.shift();

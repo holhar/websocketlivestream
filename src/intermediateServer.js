@@ -34,24 +34,27 @@ wsc.onmessage = function(message) {
     recieveCount += 1;
     logIncomingData(message.data, recieveCount, sockets.length);
 
+    broadcast(message);
+    /*
     broadcastqueue.push(message.data);
 
     setTimeout(function() {
         broadcast();
     }, 2000);
+    */
 };
 
-function broadcast()
+function broadcast(message)
 {
     sendCount += 1;
-    logOutgoingData(broadcastqueue[0], sendCount, sockets.length);
+    logOutgoingData(message.data, sendCount, sockets.length);
 
     sockets.forEach(function(ws) {
         if(ws.readyState == 1) {
-            ws.send(broadcastqueue[0], { binary: true, mask: false });
+            ws.send(message.data, { binary: true, mask: false });
         }
     });
-    broadcastqueue.shift();
+    //broadcastqueue.shift();
 }
 
 function logIncomingData(data, count, socketLength)
