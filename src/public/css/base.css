@@ -17,10 +17,15 @@
     float: right;
 }
 
-#time {
-    margin-left: 30px;
+.row {
+    padding: 10px 0;
 }
 
-#container {
-    margin-left:30px;
+.btn-margin {
+    margin: 0 0 0 20px;
+}
+
+.hidden {
+    display: none;
+    visibility: hidden;
 }

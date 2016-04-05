@@ -1,10 +1,6 @@
 /*
     CDN Edge Server
     - process.argv[2] = wssUrl switch
-
-    - process.argv[2] = server port
-    - process.argv[3] = host for client app
-    - process.argv[4] = client ws-url + port
 */
 
 // module dependencies
@@ -14,6 +10,7 @@ var bodyParser = require('body-parser');
 var fs = require('fs');
 var _ = require('underscore');
 var config = require('./config');
+var broadcastUtils = require('./broadcastUtils');
 
 // enable usage of all available cpu cores
 var cluster = require('cluster'); // required if worker id is needed
@@ -45,7 +42,32 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 
-// init node server for all available cpu cores
+// routes
+app.get('/', function (req,res){
+  res.render('index', {
+        title: 'WebSocket Livestream',
+        teaser: 'A prototype application that provides push-based live streaming capabilities with WebSockets.',
+        host: wssUrl + ':' + wssPort
+    });
+});
+app.get('/stream1', function(req, res) {
+    res.render('stream', {
+        title: 'WS Videostream 1',
+        teaser: 'Videostream 1 with WebSockets and MediaSource Plugin',
+        host: wssUrl + ':' + wssPort,
+        ingress: '1'
+    });
+});
+app.get('/stream2', function(req, res) {
+    res.render('stream', {
+        title: 'WS Videostream 2',
+        teaser: 'Videostream 2 with WebSockets and MediaSource Plugin',
+        host: wssUrl + ':' + wssPort,
+        ingress: '2'
+    });
+});
+
+// init node servers on all available cpu cores
 if (!sticky.listen(httpServer, wssPort)) {
     httpServer.once('listening', function() {
         console.log('Started webserver, listening to port ' + wssPort);
@@ -60,71 +82,94 @@ if (!sticky.listen(httpServer, wssPort)) {
     var serverId = cluster.worker.id;
     console.log('Initiate server instance ' + serverId);
     console.log('config edge-server ip: ' + config.edge.ip);
-    var sockets = [];
+    var sockets1 = [],
+        sockets2 = [];
 
     wss.on('connection', function(ws) {
 
-        console.log('client connected');
-        sockets.push(ws);
+        console.log('ws-client connected: ' + ws.upgradeReq.url);
+        if (ws.upgradeReq.url === '/stream1')
+            sockets1.push(ws);
+
+        if (ws.upgradeReq.url === '/stream2')
+            sockets2.push(ws);
+
+        ws.on('message', function(message) {
+            console.log('message from client: ' + message);
+
+            switch(message)
+            {
+                case('startStream1'):
+                    wsc1.send('startStream');
+                    break;
+                case('startStream2'):
+                    wsc2.send('startStream');
+                    break;
+                case('stopStream1'):
+                    wsc1.send('stopStream');
+                    break;
+                case('stopStream2'):
+                    wsc2.send('stopStream');
+                    break;
+            }
+        });
+
         ws.on('close', function() {
             ws = null;
         });
     });
 
     // ws client 1
-    console.log('Ws-client 1 trying to connect to ' + wsUrl1 + ':' + wsPort1);
+    console.log('ws-client1 connecting to ws-server: ' + wsUrl1 + ':' + wsPort1);
     var WebSocket1 = require('ws');
     var wsc1 = new WebSocket1('ws://' + wsUrl1 + ':' + wsPort1);
 
     wsc1.binaryType = 'arraybuffer';
     wsc1.onmessage = function(message) {
         recieveCount += 1;
-        logIncomingData(message.data, recieveCount, sockets.length);
+        logIncomingData(message.data, recieveCount, sockets1.length);
 
-        broadcast(message);
+        broadcast(message, 'wsc1');
     };
 
-    // ws client 1
-    console.log('Ws-client 2 trying to connect to ' + wsUrl2 + ':' + wsPort2);
+    // ws client 2
+    console.log('ws-client2 connecting to ws-server: ' + wsUrl2 + ':' + wsPort2);
     var WebSocket2 = require('ws');
     var wsc2 = new WebSocket2('ws://' + wsUrl2 + ':' + wsPort2);
 
     wsc2.binaryType = 'arraybuffer';
     wsc2.onmessage = function(message) {
         recieveCount += 1;
-        logIncomingData(message.data, recieveCount, sockets.length);
+        logIncomingData(message.data, recieveCount, sockets2.length);
 
-        broadcast(message);
+        broadcast(message, 'wsc2');
     };
 }
 
-// routes
-app.get('/', function (req,res){
-  res.render('index', {
-        title: 'WebSocket Livestream',
-        teaser: 'A prototype application that provides push-based live streaming capabilities with WebSockets.',
-        host: wssUrl + ':' + wssPort
-    });
-});
-app.get('/stream', function(req, res) {
-    res.render('stream', {
-        title: 'WS Videostream',
-        teaser: 'Videostream with WebSockets and MediaSource Plugin',
-        host: wssUrl + ':' + wssPort
-    });
-});
-
 // functions
-function broadcast(message)
+function broadcast(message, wscNo)
 {
-    sendCount += 1;
-    logOutgoingData(message.data, sendCount, sockets.length);
+    if(wscNo === 'wsc1') {
+        sendCount += 1;
+        logOutgoingData(message.data, sendCount, sockets1.length);
 
-    sockets.forEach(function(ws) {
-        if(ws.readyState == 1) {
-            ws.send(message.data, { binary: true, mask: false });
-        }
-    });
+        sockets1.forEach(function(ws) {
+            if(ws.readyState == 1) {
+                ws.send(message.data, { binary: true, mask: false });
+            }
+        });
+    }
+
+    if(wscNo === 'wsc2') {
+        sendCount += 1;
+        logOutgoingData(message.data, sendCount, sockets2.length);
+
+        sockets2.forEach(function(ws) {
+            if(ws.readyState == 1) {
+                ws.send(message.data, { binary: true, mask: false });
+            }
+        });
+    }
 }
 
 function logIncomingData(data, count, socketLength)

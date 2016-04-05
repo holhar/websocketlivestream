@@ -6,6 +6,8 @@ html
     link(rel = 'stylesheet', href = '/css/bootstrap.min.css')
     link(rel = 'stylesheet', href = '/css/base.css')
   body
+    div(class='hidden' id=ingress)
+
     div(class='container')
         div(class='header clearfix')
             h3(class='text-muted') Realtime Web-Communication
@@ -13,7 +15,9 @@ html
                 li(role='presentation')
                     a(href='http://' + host + '/') Home
                 li(role='presentation')
-                    a(href='http://' + host + '/stream') WS-Video Livestream
+                    a(href='http://' + host + '/stream1') WS-Video Livestream 1
+                li(role='presentation')
+                    a(href='http://' + host + '/stream2') WS-Video Livestream 2
         div(class='jumbotron')
             h1 #{title}
             p(class='lead') #{teaser}

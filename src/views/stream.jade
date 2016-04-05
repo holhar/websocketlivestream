@@ -1,6 +1,13 @@
 extends layout
 
 block content
-    video(width='640', height='480', controls)
+    div(class='row')
+        div(class='col-md-12')
+            input(id='btn1' type='button' class='btn btn-default btn-success' value='start Stream')
+            input(id='btn2' type='button' class='btn btn-default btn-danger btn-margin' value='stop Stream')
+
+    div(class='row')
+        div(class='col-md-6')
+            video(width='640', height='480', controls)
 
     script(type='text/javascript', src='/js/videoStreamClient.js')

@@ -1,4 +1,9 @@
-(function() {
+document.addEventListener('DOMContentLoaded', function() {
+
+    var streamId = document.querySelector('.hidden').getAttribute('id'),
+        ws;
+
+    initWsConnection();
 
     if ('MediaSource' in window && MediaSource.isTypeSupported('video/mp4; codecs="avc1.64001F"'))
     {
@@ -25,7 +30,7 @@
     function sourceOpenCallback(e)
     {
         // Adjust socket URL to host IP address
-        var ws = new WebSocket('ws://' + window.location.host + '/stream');
+        ws = new WebSocket('ws://' + window.location.host + '/stream' + streamId);
         ws.binaryType = 'arraybuffer';
         sourceBuffer = mediaSource.addSourceBuffer(codecs);
         sourceBuffer.mode = 'sequence';
@@ -95,4 +100,22 @@
         console.log(state + ' updating');
     }
 
-})();
+    function initWsConnection() {
+        if(typeof ws === 'undefined')
+            ws = new WebSocket('ws://' + window.location.host + '/stream' + streamId);
+    }
+
+    document.getElementById('btn1').onclick = function startStream()
+    {
+        console.log('sending startStream Query');
+        ws.send('startStream' + streamId, { binary: false, mask: true});
+    };
+
+    document.getElementById('btn2').onclick = function stopStream() {
+        console.log('sending stopStream Query');
+        ws.send('stopStream' + streamId, { binary: false, mask: true});
+        console.log('closing connection');
+        ws.close();
+    };
+
+});
