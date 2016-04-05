@@ -1,5 +1,7 @@
 /*
     CDN Edge Server
+    - process.argv[2] = wssUrl switch
+
     - process.argv[2] = server port
     - process.argv[3] = host for client app
     - process.argv[4] = client ws-url + port
@@ -11,15 +13,24 @@ var path = require('path');
 var bodyParser = require('body-parser');
 var fs = require('fs');
 var _ = require('underscore');
+var config = require('./config');
 
 // enable usage of all available cpu cores
 var cluster = require('cluster'); // required if worker id is needed
 var sticky = require('sticky-session');
 
 // helper vars
-var broadcastqueue = [],
-    recieveCount = 0,
-    sendCount = 0;
+var recieveCount = 0,
+    sendCount = 0,
+    wssUrl = '',
+    wssPort = config.edge.wssPort,
+    wsUrl1 = '',
+    wsPort1 = config.edge.wsPort1,
+    wsUrl2 = '',
+    wsPort2 = config.edge.wsPort2;
+
+// check for local or network CDN and server number
+getServerSetup(process.argv[2]);
 
 
 // init and configure express webserver
@@ -35,10 +46,10 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 
 // init node server for all available cpu cores
-if (!sticky.listen(httpServer, process.argv[2])) {
+if (!sticky.listen(httpServer, wssPort)) {
     httpServer.once('listening', function() {
-        console.log('Started webserver, listening to port ' + process.argv[2]);
-        console.log('host address: ' + process.argv[3] + ':' + process.argv[2]);
+        console.log('Started webserver, listening to port ' + wssPort);
+        console.log('host address: ' + wssUrl + ':' + wssPort);
     });
 } else {
 
@@ -48,6 +59,7 @@ if (!sticky.listen(httpServer, process.argv[2])) {
 
     var serverId = cluster.worker.id;
     console.log('Initiate server instance ' + serverId);
+    console.log('config edge-server ip: ' + config.edge.ip);
     var sockets = [];
 
     wss.on('connection', function(ws) {
@@ -59,25 +71,30 @@ if (!sticky.listen(httpServer, process.argv[2])) {
         });
     });
 
-    // ws client
-    console.log('Client trying to connect to ' + process.argv[4]);
-    var WebSocket = require('ws');
-    var wsc = new WebSocket('ws://' + process.argv[4]);
+    // ws client 1
+    console.log('Ws-client 1 trying to connect to ' + wsUrl1 + ':' + wsPort1);
+    var WebSocket1 = require('ws');
+    var wsc1 = new WebSocket1('ws://' + wsUrl1 + ':' + wsPort1);
 
-    wsc.binaryType = 'arraybuffer';
-    wsc.onmessage = function(message) {
+    wsc1.binaryType = 'arraybuffer';
+    wsc1.onmessage = function(message) {
         recieveCount += 1;
         logIncomingData(message.data, recieveCount, sockets.length);
 
         broadcast(message);
+    };
 
-        /*
-        broadcastqueue.push(message.data);
+    // ws client 1
+    console.log('Ws-client 2 trying to connect to ' + wsUrl2 + ':' + wsPort2);
+    var WebSocket2 = require('ws');
+    var wsc2 = new WebSocket2('ws://' + wsUrl2 + ':' + wsPort2);
 
-        setTimeout(function() {
-            broadcast();
-        }, 2000);
-        */
+    wsc2.binaryType = 'arraybuffer';
+    wsc2.onmessage = function(message) {
+        recieveCount += 1;
+        logIncomingData(message.data, recieveCount, sockets.length);
+
+        broadcast(message);
     };
 }
 
@@ -86,14 +103,14 @@ app.get('/', function (req,res){
   res.render('index', {
         title: 'WebSocket Livestream',
         teaser: 'A prototype application that provides push-based live streaming capabilities with WebSockets.',
-        host: process.argv[3] + ':' + process.argv[2]
+        host: wssUrl + ':' + wssPort
     });
 });
 app.get('/stream', function(req, res) {
     res.render('stream', {
         title: 'WS Videostream',
         teaser: 'Videostream with WebSockets and MediaSource Plugin',
-        host: process.argv[3] + ':' + process.argv[2]
+        host: wssUrl + ':' + wssPort
     });
 });
 
@@ -108,7 +125,6 @@ function broadcast(message)
             ws.send(message.data, { binary: true, mask: false });
         }
     });
-    // broadcastqueue.shift();
 }
 
 function logIncomingData(data, count, socketLength)
@@ -123,4 +139,19 @@ function logOutgoingData(data, count, socketLength)
     console.log("Type: " + typeof data + ", Size: " + data.length);
     console.log('Sending chunk of data: ' + count);
     // console.log("Sending to " + socketLength + " sockets");
+}
+
+function getServerSetup(wssUrlSwitch) {
+    if(wssUrlSwitch === 'local')
+    {
+        wssUrl = config.localhost;
+        wsUrl1 = config.localhost;
+        wsUrl2 = config.localhost;
+    }
+    else if(wssUrlSwitch === 'network')
+    {
+        wssUrl = config.egde.wssUrl;
+        wsUrl1 = config.edge.wsUrl1;
+        wsUrl2 = config.edge.wsUrl2;
+    }
 }

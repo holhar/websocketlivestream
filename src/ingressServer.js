@@ -1,7 +1,7 @@
 /*
     CDN Ingress Server (can also emulate Edge Server)
-    - process.argv[2] = port
-    - process.argv[3] = host for client app
+    - process.argv[2] = wssUrl switch
+    - process.argv[3] = wssPort switch
 */
 
 // module dependencies
@@ -10,7 +10,7 @@ var path = require('path');
 var bodyParser = require('body-parser');
 var fs = require('fs');
 var _ = require('underscore');
-var lastBroadcastElement;
+var config = require('./config');
 
 // enable usage of all available cpu cores
 var cluster = require('cluster'); // required if worker id is needed
@@ -19,7 +19,13 @@ var sticky = require('sticky-session');
 // helper vars
 var mpgDashSegmentsPath = 'data/dashsegments/',
     broadcastQueue = [],
-    isBroadcasting = false;
+    isBroadcasting = false,
+    wssUrl = '',
+    wssPort = '',
+    lastBroadcastElement;
+
+// check for local or network CDN and server number
+getServerSetup(process.argv[2], process.argv[3]);
 
 // init and configure express webserver
 var app = express();
@@ -34,11 +40,11 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 
 // init node server for all available cpu cores
-if (!sticky.listen(httpServer, process.argv[2]))
+if (!sticky.listen(httpServer, wssPort))
 {
     httpServer.once('listening', function() {
-        console.log('Started webserver, listening to port ' + process.argv[2]);
-        console.log('host address: ' + process.argv[3] + ':' + process.argv[2]);
+        console.log('Started webserver, listening to port ' + wssPort);
+        console.log('WebSocket-Server URL: ' + wssUrl + ':' + wssPort);
     });
 } else {
 
@@ -65,14 +71,14 @@ app.get('/', function(req, res) {
     res.render('index', {
         title: 'WebSocket Livestream',
         teaser: 'A prototype application that provides push-based live streaming capabilities with WebSockets.',
-        host: process.argv[3] + ':' + process.argv[2]
+        host: wssUrl + ':' + wssPort
     });
 });
 app.get('/stream', function(req, res) {
     res.render('stream', {
         title: 'WS Videostream',
         teaser: 'Videostream with WebSockets and MediaSource Plugin',
-        host: process.argv[3] + ':' + process.argv[2]
+        host: wssUrl + ':' + wssPort
     });
 });
 
@@ -172,6 +178,30 @@ function getMostRecentFile(dir, regexp, chunkOffset)
         return mpgSegments[index - chunkOffset];
     } else {
         return null;
+    }
+}
+
+function getServerSetup(wssUrlSwitch, wssPortSwitch) {
+    if(wssUrlSwitch === 'local')
+    {
+        wssUrl = config.localhost;
+    }
+    else if(wssUrlSwitch === 'network' && wssPortSwitch === '1')
+    {
+        wssUrl = config.ingress1.wssUrl;
+    }
+    else if(wssUrlSwitch === 'network' && wssPortSwitch === '2')
+    {
+        wssUrl = config.ingress2.wssUrl;
+    }
+
+    if(wssPortSwitch === '1')
+    {
+        wssPort = config.ingress1.wssPort;
+    }
+    else if(wssPortSwitch === '2')
+    {
+        wssPort = config.ingress2.wssPort;
     }
 }
 
