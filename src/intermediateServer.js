@@ -5,6 +5,7 @@
 */
 
 var config = require('./config'),
+    broadcastUtils = require('./broadcastUtils'),
     sockets = [],
     recieveCount = 0,
     sendCount = 0,
@@ -23,8 +24,13 @@ console.log('Server running and listening to port ' + wssPort);
 
 wss.on('connection', function(ws) {
 
-    console.log('client connected');
+    console.log('ws-client connected');
     sockets.push(ws);
+
+    ws.on('message', function(message) {
+        console.log('message from client: ' + message);
+        wsc.send(message);
+    });
 
     ws.on('close', function() {
         ws = null;
@@ -32,8 +38,9 @@ wss.on('connection', function(ws) {
 });
 
 // ws-client
-console.log('Client trying to connect to ' + wsUrl + ':' + wsPort);
+console.log('ws-client connecting to ws-server: ' + wsUrl + ':' + wsPort);
 var WebSocket = require('ws');
+
 var wsc = new WebSocket('ws://' + wsUrl + ':' + wsPort);
 
 wsc.binaryType = 'arraybuffer';
@@ -70,50 +77,61 @@ function logOutgoingData(data, count, socketLength)
     // console.log("Sending to " + socketLength + " sockets");
 }
 
-function getServerSetup(wssUrlSwitch, wssPortSwitch) {
+function getServerSetup(wssUrlSwitch, wssPortSwitch)
+{
     if(wssUrlSwitch === 'local')
     {
         wssUrl = config.localhost;
-    }
-    else if(wssUrlSwitch === 'network' && wssPortSwitch === '1')
-    {
-        wssUrl = config.intermediate1.wssUrl;
-    }
-    else if(wssUrlSwitch === 'network' && wssPortSwitch === '2')
-    {
-        wssUrl = config.intermediate2.wssUrl;
-    }
-    else if(wssUrlSwitch === 'network' && wssPortSwitch === '3')
-    {
-        wssUrl = config.intermediate3.wssUrl;
-    }
-    else if(wssUrlSwitch === 'network' && wssPortSwitch === '4')
-    {
-        wssUrl = config.intermediate4.wssUrl;
-    }
+        wsUrl = config.localhost;
 
-    if(wssPortSwitch === '1')
-    {
-        wssPort = config.intermediate1.wssPort;
-        wsUrl = (wssUrlSwitch === 'local') ? config.localhost : config.intermediate1.wsUrl;
-        wsPort = config.intermediate1.wsPort;
+        switch(wssPortSwitch)
+        {
+            case('1'):
+                wssPort = config.intermediate1.wssPort;
+                wsPort = config.intermediate1.wsPort;
+                break;
+            case('2'):
+                wssPort = config.intermediate2.wssPort;
+                wsPort = config.intermediate2.wsPort;
+                break;
+            case('3'):
+                wssPort = config.intermediate3.wssPort;
+                wsPort = config.intermediate3.wsPort;
+                break;
+            case('4'):
+                wssPort = config.intermediate4.wssPort;
+                wsPort = config.intermediate4.wsPort;
+                break;
+        }
     }
-    else if(wssPortSwitch === '2')
+    else if(wssUrlSwitch === 'network')
     {
-        wssPort = config.intermediate2.wssPort;
-        wsUrl = (wssUrlSwitch === 'local') ? config.localhost : config.intermediate2.wsUrl;
-        wsPort = config.intermediate2.wsPort;
-    }
-    else if(wssPortSwitch === '3')
-    {
-        wssPort = config.intermediate3.wssPort;
-        wsUrl = (wssUrlSwitch === 'local') ? config.localhost : config.intermediate3.wsUrl;
-        wsPort = config.intermediate3.wsPort;
-    }
-    else if(wssPortSwitch === '4')
-    {
-        wssPort = config.intermediate4.wssPort;
-        wsUrl = (wssUrlSwitch === 'local') ? config.localhost : config.intermediate4.wsUrl;
-        wsPort = config.intermediate4.wsPort;
+        switch(wssPortSwitch)
+        {
+            case('1'):
+                wssUrl = config.intermediate1.wssUrl;
+                wsUrl = config.intermediate1.wsUrl;
+                wssPort = config.intermediate1.wssPort;
+                wsPort = config.intermediate1.wsPort;
+                break;
+            case('2'):
+                wssUrl = config.intermediate2.wssUrl;
+                wsUrl = config.intermediate2.wsUrl;
+                wssPort = config.intermediate2.wssPort;
+                wsPort = config.intermediate2.wsPort;
+                break;
+            case('3'):
+                wssUrl = config.intermediate3.wssUrl;
+                wsUrl = config.intermediate3.wsUrl;
+                wssPort = config.intermediate3.wssPort;
+                wsPort = config.intermediate3.wsPort;
+                break;
+            case('4'):
+                wssUrl = config.intermediate4.wssUrl;
+                wsUrl = config.intermediate4.wsUrl;
+                wssPort = config.intermediate4.wssPort;
+                wsPort = config.intermediate4.wsPort;
+                break;
+        }
     }
 }
