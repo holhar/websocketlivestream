@@ -1,4 +1,11 @@
-exports.addToQueue = function(broadcastQueue, newSegment)
+/*
+    Utilities for all WS-Server
+*/
+
+var broadcastUtils = {};
+
+
+broadcastUtils.addToQueue = function(broadcastQueue, newSegment)
 {
     for(var i=0; i<broadcastQueue.length; i++) {
         if(broadcastQueue[i] === newSegment)
@@ -8,3 +15,6 @@ exports.addToQueue = function(broadcastQueue, newSegment)
     broadcastQueue.push(newSegment);
     return;
 };
+
+
+module.exports = broadcastUtils;
