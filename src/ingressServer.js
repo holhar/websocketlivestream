@@ -5,12 +5,13 @@
 */
 
 // module dependencies
-var express = require('express');
-var path = require('path');
-var bodyParser = require('body-parser');
-var fs = require('fs');
-var _ = require('underscore');
-var config = require('./config');
+var express = require('express'),
+    path = require('path'),
+    bodyParser = require('body-parser'),
+    fs = require('fs'),
+    _ = require('underscore'),
+    config = require('./config'),
+    broadcastUtils = require('./broadcastUtils');
 
 // enable usage of all available cpu cores
 var cluster = require('cluster'); // required if worker id is needed
@@ -20,6 +21,7 @@ var sticky = require('sticky-session');
 var mpgDashSegmentsPath = 'data/dashsegments/',
     broadcastQueue = [],
     isBroadcasting = false,
+    doBroadcasting = false,
     wssUrl = '',
     wssPort = '',
     lastBroadcastElement;
@@ -27,7 +29,8 @@ var mpgDashSegmentsPath = 'data/dashsegments/',
 // check for local or network CDN and server number
 getServerSetup(process.argv[2], process.argv[3]);
 
-// init and configure express webserver
+
+// webserver setup
 var app = express();
 var httpServer = require('http').createServer(app, function(req, res) {
     res.end('worker: ' + cluster.worker.id);
@@ -38,33 +41,6 @@ app.set('view engine', 'jade');
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
-
-// init node server for all available cpu cores
-if (!sticky.listen(httpServer, wssPort))
-{
-    httpServer.once('listening', function() {
-        console.log('Started webserver, listening to port ' + wssPort);
-        console.log('WebSocket-Server URL: ' + wssUrl + ':' + wssPort);
-    });
-} else {
-
-    var WebSocketServer = require('ws').Server;
-    var wss = new WebSocketServer({ server: httpServer });
-
-    var serverId = cluster.worker.id;
-    console.log('Initiate server instance ' + serverId);
-    var sockets = [];
-
-    wss.on('connection', function(ws) {
-        sockets.push(ws);
-
-        startWatcher();
-
-        ws.on('close', function() {
-            ws = null;
-        });
-    });
-}
 
 // routes
 app.get('/', function(req, res) {
@@ -82,22 +58,59 @@ app.get('/stream', function(req, res) {
     });
 });
 
-// functions
-function startWatcher()
+// init node servers on all available cpu cores
+if (!sticky.listen(httpServer, wssPort))
 {
-    broadcast(2);
-    setTimeout(function() {
-        broadcast(1);
-    }, 5000);
+    httpServer.once('listening', function() {
+        console.log('Started webserver, listening to port ' + wssPort);
+        console.log('WebSocket-Server URL: ' + wssUrl + ':' + wssPort);
+    });
+} else {
 
-    fs.watch(mpgDashSegmentsPath, { persistent: true, interval: 1000 }, function(curr, prev) {
-        broadcast(1);
+    // init wss
+    var WebSocketServer = require('ws').Server;
+    var wss = new WebSocketServer({ server: httpServer });
+
+    var serverId = cluster.worker.id;
+    console.log('Initiate wss instance ' + serverId);
+    var sockets = [];
+
+    wss.on('connection', function(ws) {
+        console.log('client connected');
+        sockets.push(ws);
+
+        ws.on('message', function(message) {
+            console.log('message from client: ' + message);
+            if(message === 'startStream') {
+                doBroadcasting = true;
+                console.log('starting Watcher');
+                startWatcher();
+            }
+            if(message === 'stopStream') {
+                console.log('check for open connections');
+                checkOpenConnections();
+            }
+        });
+
+        ws.on('close', function() {
+            ws = null;
+        });
     });
 }
 
-function broadcast(chunkOffset)
+// functions
+function startWatcher()
 {
-    mostRecentFile = getMostRecentFile(mpgDashSegmentsPath, /webcam_part\d+_dashinit\.mp4/i, chunkOffset);
+    fs.watch(mpgDashSegmentsPath, { persistent: true, interval: 1000 }, function(curr, prev)
+    {
+        if(doBroadcasting)
+            broadcast();
+    });
+}
+
+function broadcast()
+{
+    mostRecentFile = getMostRecentFile(mpgDashSegmentsPath, /webcam_part\d+_dashinit\.mp4/i);
 
     if (typeof mostRecentFile === 'string')
     {
@@ -148,13 +161,11 @@ function addToQueue(newSegment, broadcastQueue)
 }
 
 // Return only base file name without dir
-function getMostRecentFile(dir, regexp, chunkOffset)
+function getMostRecentFile(dir, regexp)
 {
     var files = fs.readdirSync(dir);
     var mpgSegments = [];
     var match = '';
-
-
 
     for (var i = 0; i < files.length; i++) {
         if (files[i].match(regexp)) {
@@ -167,18 +178,11 @@ function getMostRecentFile(dir, regexp, chunkOffset)
     mostRecentFile = _.max(mpgSegments, function(f) {
         var fullpath = path.join(dir, f);
 
-        // ctime = creation time is used
-        // replace with mtime for modification time
+        // replace ctime (creation time) with mtime for modification time
         return fs.statSync(fullpath).ctime;
     });
 
-
-    if (mpgSegments.length > chunkOffset) {
-        index = mpgSegments.indexOf(mostRecentFile);
-        return mpgSegments[index - chunkOffset];
-    } else {
-        return null;
-    }
+    return mostRecentFile;
 }
 
 function getServerSetup(wssUrlSwitch, wssPortSwitch) {
@@ -203,6 +207,24 @@ function getServerSetup(wssUrlSwitch, wssPortSwitch) {
     {
         wssPort = config.ingress2.wssPort;
     }
+}
+
+function checkOpenConnections() {
+    var counter = 0;
+
+    sockets.forEach(function(socket) {
+        if (socket.readyState === 0) {
+            counter += 1;
+        }
+    });
+
+    if(counter < 1) {
+        console.log('no open connections, stop broadcasting');
+        doBroadcasting = false;
+        return;
+    }
+    console.log('there are still open connections');
+    return;
 }
 
 function logReadStreamData(data, count, socketLength)
