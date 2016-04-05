@@ -30,7 +30,7 @@ config.intermediate1.wssPort = '8011';
 config.intermediate1.wsUrl   = config.ingress1.wssUrl;
 config.intermediate1.wsPort  = config.ingress1.wssPort;
 
-config.intermediate2.wssUrl  = '192.168.42.12';
+config.intermediate2.wssUrl  = config.intermediate1.wssUrl;
 config.intermediate2.wssPort = '8012';
 config.intermediate2.wsUrl   = config.intermediate1.wssUrl;
 config.intermediate2.wsPort  = config.intermediate1.wssPort;
@@ -38,12 +38,12 @@ config.intermediate2.wsPort  = config.intermediate1.wssPort;
 config.intermediate3.wssUrl  = '192.168.42.13';
 config.intermediate3.wssPort = '8013';
 config.intermediate3.wsUrl   = config.ingress2.wssUrl;
-config.intermediate3.WsPort  = config.ingress2.wssPort;
+config.intermediate3.wsPort  = config.ingress2.wssPort;
 
-config.intermediate4.wssUrl  = '192.168.42.14';
-config.intermediate4.wssPort = '8011';
+config.intermediate4.wssUrl  = config.intermediate3.wssUrl;
+config.intermediate4.wssPort = '8014';
 config.intermediate4.wsUrl   = config.intermediate3.wssUrl;
-config.intermediate4.WsPort  = config.intermediate3.wssPort;
+config.intermediate4.wsPort  = config.intermediate3.wssPort;
 
 config.edge.wssUrl  = '192.168.42.20';
 config.edge.wssPort = '8020';
