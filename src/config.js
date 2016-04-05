@@ -10,12 +10,15 @@ var config = {};
 // localhost Setup
 config.localhost =  'localhost';
 
-config.ingress = {};
+config.ingress1 = {};
+config.ingress2 = {};
 config.intermediate1 = {};
 config.intermediate2 = {};
+config.intermediate3 = {};
+config.intermediate4 = {};
 config.edge = {};
 
-// ports + wssUrls
+// wss urls + ports
 config.ingress1.wssUrl  = '192.168.42.1';
 config.ingress1.wssPort = '8001';
 
