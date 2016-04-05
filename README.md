@@ -9,6 +9,7 @@ The **app.js** contains the serverside-components of the prototype. The client-s
 * npm
 * ffmpeg
 * mp4box
+* ttab (node module, that must be installed globally - only necessary, if you want to use the shell-script for opening multiple servers.)
 
 ## Usage
 
