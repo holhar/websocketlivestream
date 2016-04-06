@@ -1,17 +1,34 @@
 # websocketlivestream
 
-This project includes a prototype application that provides push-based live streaming capabilities with WebSockets. To emulate a livestream ingress a webcam stream is being captured, stored and transcoded in MPEG-DASH segments by using ffmpeg and mp4box.
+## Table of Contents
+  * [Prerequisites](#prerequisites)
+  * [Installation](#installation)
+  * [Workflow](#workflow)
 
-The **app.js** contains the serverside-components of the prototype. The client-side equivalent can be found in **public/js**.
+Websocketlivestream provides video livestream capability over the WebSocket protocol. This repository presents a prototype including three types of WebSocket server in a CDN-like scenario, as displayed in the figure below.
 
-## Prerequisites
+![Basic CDN Scheme](docs/res/cdn-scheme.png)
+
+These three server types include:
+
+* an **ingress server**, that captures the video feed (note that the ingress server can be modified to serve as an ingress and egde server in one),
+* an **intermediate server** for passing the data flow between servers (intermediates can be randomly combined and support scalability), and
+* an **edge server**, that feed the video streams to clients and also presents an http client site (so far this server can provide up to two streams / ingresses).
+
+There is an config file (**src/config.js**) that arranges the IP-addresses of the different devices. The file also indicates on which device which server should be running. The server startup must be following this configuration, unless the whole application shall be running locally - in this case only the ports must be matching. See [here](#startservers) for further details.
+
+The incoming video stream can be emulated by a webcam stream, which is being captured, stored and transcoded in MPEG-DASH segments by using ffmpeg and mp4box.
+
+The video is being played on the client side via the MediaSource-Plugin provided by the browser. **So far, the Firefox-API has been used**.
+
+## Prerequisites <a id="prerequisites"></a>
 
 * npm
 * ffmpeg
 * mp4box
 * ttab (node module, that must be installed globally - only necessary, if you want to use the shell-script for opening multiple servers.)
 
-## Usage
+### Installation <a id="installation"></a>
 
 * Change into the project's root-directory
 
@@ -21,52 +38,43 @@ The **app.js** contains the serverside-components of the prototype. The client-s
 $ npm install
 ```
 
-## Prototype
+### Workflow <a id="workflow"></a>
 
-### WS-Video Livestream
+The DASH-segments that are necessary for a functioning livestream are produced in three steps by **ffmpeg** and the **transcode.js**-script located in **src/res/dashsegments**. At first, mpg-segments are produced automatically as segments by ffmpeg and stored into the **src/data/webcamstream**-folder. These segments are further processed by the transcode.js script into mp4-segments. After this process, **mp4box** creates DASH-segments which are stored in the *src/data/dashsegments*-folder. 
 
-This is a video livestream server over WebSockets - video is being played on the client side via the MediaSource-Plugin provided by the browser. **So far, the Firefox-API has been used**.
-
-#### Workflow
-
-The DASH-segments that are necessary for a functioning livestream are produced in three steps by **ffmpeg** and the **transcode.js**-script located in *res/dashsegments*. At first, the mp4-segments are produced automatically by ffmpeg and stored into the *mp4segments-folder*. After this process **mp4box** creates DASH-segments which are stored in the dashsegments-folder. 
-
-To get the prototype running follow these three steps:
-
-##### Start Webserver
-
-From inside the project's root directory:
+##### Change into scripts folder
 
 ```
-$ node app.js
+$ cd src/scripts/
 ```
 
 ##### Start Transcoding Script
 
-Change into the dashsegments-folder:
-
 ```
-$ cd res/dashsegments/
+$ ./transcodingStart.sh
 ```
 
-And start the transcoding script - you need mp4box installed for this:
+The script watches for changes in the other data-folders and transcodes mpg-segments into mp4-segments, and also transcodes mp4-segments into DASH-segments. **mp4box** is neede for this process.
+
+##### Start Webcam-Capture
 
 ```
-$ node transcode.js
+$ webcamStart.sh
 ```
 
-##### Webcam-Capture
+**ffmpeg** needs to be installed for this.
+Note that I used the mac tool **qtkit** for capturing the webcam. Depending on the system in use, you may use a slighty different command.
 
-Change into the webcamstream-folder:
+##### Start the servers <a id="startservers"></a>
 
-```
-$ cd res/webcamstream/
-```
+There are several different scripts for starting the servers:
 
-And start webcam-capture - you need ffmpeg installed for this:
+* serverStart.sh
+* allIntermediatesStart.sh
+* firstIntermediatesStart.sh
+* lastIntermediatesStart.sh
 
-```
-$ ffmpeg -f qtkit -i "default" webcamout.mpg -map 0 -f ssegment -segment_list playlist.m3u8 -segment_list_flags +live -segment_time 10 webcam_part%03d.mpg
-```
-
-Note that I used the mac tool **qtkit** for capturing the webcam. Depending on the system you may use a slighty different command.
+The first one is the most important script and starts an cdn ws-server instance. There are three three arguments needed to do so:
+* argument 1 states if the server runs locally (for fast testing purposes) or in the cdn network; the argument must be 'local' or 'network'.
+* argument 2 states which server to start and must be 'ingress', 'intermediate' or 'edge'.
+* argument 3 must be '1', '2', '3' or '4' and tells which instance number to start (see **src/config.js**).

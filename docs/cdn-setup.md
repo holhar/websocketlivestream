@@ -2,7 +2,7 @@
 
 ## Basic Scheme
 
-![Basic CDN Scheme](cdn-scheme.png)
+![Basic CDN Scheme](res/cdn-scheme.png)
 
 ## WLAN Access-Point
 
