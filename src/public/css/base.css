@@ -3,22 +3,29 @@
     padding-top: 8px;
 }
 
-.jumbotron h1 {
+.jumbotron .heading {
     font-size: 50px;
 }
 
-.header h3 {
-    float: left;
+.header .heading {
     border-bottom: none;
     margin-top: 11px;
 }
 
 .nav-tabs {
-    float: right;
+    border-bottom: none;
+}
+
+.first {
+    padding-left: 0!important;
 }
 
 .row {
-    padding: 10px 0;
+    margin: 10px 0;
+}
+
+.filler {
+    border-bottom: 1px solid #ddd;
 }
 
 .btn-margin {

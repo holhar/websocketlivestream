@@ -2,7 +2,8 @@ doctype html
 html
   head
     title #{title}
-    meta(charset="UTF-8")
+    meta(charset = 'UTF-8')
+    link(rel = 'icon', href = '/images/favicon.ico')
     link(rel = 'stylesheet', href = '/css/bootstrap.min.css')
     link(rel = 'stylesheet', href = '/css/base.css')
   body
@@ -10,15 +11,21 @@ html
 
     div(class='container')
         div(class='header clearfix')
-            h3(class='text-muted') Realtime Web-Communication
-            ul(class='nav nav-tabs')
-                li(role='presentation')
-                    a(href='http://' + host + '/') Home
-                li(role='presentation')
-                    a(href='http://' + host + '/stream1') WS-Video Livestream 1
-                li(role='presentation')
-                    a(href='http://' + host + '/stream2') WS-Video Livestream 2
+            div(class='col-md-3')
+                img(src = '/images/logo.png', class = 'img-responsive logo', alt='Logo')
+            div(class='col-md-9 heading')
+                h3(class='text-muted') Realtime Web-Communication
+                ul(class='nav nav-tabs')
+                    li(role='presentation')
+                        a(href='http://' + host + '/', class='first') Home
+                    li(role='presentation')
+                        a(href='http://' + host + '/stream1') WS-Video Livestream 1
+                    li(role='presentation')
+                        a(href='http://' + host + '/stream2') WS-Video Livestream 2
+        div(class='row')
+            div(class='col-md-12 filler')
         div(class='jumbotron')
-            h1 #{title}
-            p(class='lead') #{teaser}
+                div(class='heading')
+                    h1 #{title}
+                p(class='lead') #{teaser}
         block content
