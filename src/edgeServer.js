@@ -11,12 +11,12 @@ var express = require('express'),
     _ = require('underscore'),
     sticky = require('sticky-session'), // enable usage of all available cpu cores
     cluster = require('cluster'),       // required if worker id is needed
-    websocketlivestream = require('./websocketlivestream'),
+    WebSocketLivestream = require('./WebSocketLivestream'),
     logger = require('./logger');
 
 // set CDN and server configuration
-wsLivestream1 = new websocketlivestream();
-wsLivestream2 = new websocketlivestream();
+wsLivestream1 = new WebSocketLivestream();
+wsLivestream2 = new WebSocketLivestream();
 wsLivestream1.initEdgeServer(process.argv[2], '1');
 wsLivestream2.initEdgeServer(process.argv[2], '2');
 

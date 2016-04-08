@@ -1,7 +1,8 @@
 var fs = require('fs'),
-    wsLivestream = require('../../websocketlivestream'),
+    WebSocketLivestream = require('../../WebSocketLivestream'),
     logger = require('../../logger');
 
+wsLivestream = new WebSocketLivestream();
 wsLivestream.initTranscoder('../webcamstream/', '../mp4segments/', './');
 logger.logTranscodingStartup(wsLivestream.webcamStreamPath, wsLivestream.mp4SegmentsPath);
 
@@ -14,7 +15,7 @@ fs.watch(
     },
     function(curr, prev)
     {
-        wsLivestream.transcodeNextMpgSegment();
+        wsLivestream.setupNextMpgTranscodingCycle();
 
         if(!wsLivestream.isTranscodingToMp4) {
             wsLivestream.transcodeToMp4();

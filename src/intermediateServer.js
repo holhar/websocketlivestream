@@ -4,12 +4,12 @@
     - process.argv[3] = wssPort switch
 */
 
-var websocketlivestream    = require('./websocketlivestream'),
+var WebSocketLivestream    = require('./WebSocketLivestream'),
     logger          = require('./logger'),
     WebSocketServer = require('ws').Server;
 
 // set CDN and server configuration
-var wsLivestream = new websocketlivestream();
+var wsLivestream = new WebSocketLivestream();
 wsLivestream.initIntermediateServer(process.argv[2], process.argv[3]);
 
 // init ws-server

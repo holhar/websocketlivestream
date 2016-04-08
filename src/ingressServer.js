@@ -12,11 +12,11 @@ var express = require('express'),
     _ = require('underscore'),
     sticky = require('sticky-session'), // enable usage of all available cpu cores
     cluster = require('cluster'),       // required if worker id is needed
-    websocketlivestream = require('./websocketlivestream'),
+    WebSocketLivestream = require('./WebSocketLivestream'),
     logger = require('./logger');
 
 // set CDN and server configuration
-var wsLivestream = new websocketlivestream();
+var wsLivestream = new WebSocketLivestream();
 wsLivestream.initIngressServer(process.argv[2], process.argv[3], 'data/dashsegments/');
 
 // init webserver

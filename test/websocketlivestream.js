@@ -1,8 +1,8 @@
 var expect = require('chai').expect;
-var websocketlivestream = require('../src/websocketlivestream');
-var wsLivestream = new websocketlivestream();
+var WebSocketLivestream = require('../src/WebSocketLivestream');
+var wsLivestream = new WebSocketLivestream();
 
-describe('websocketlivestream', function()
+describe('WebSocketLivestream', function()
 {
     var socket1 = {name: 'socket1', url: 'ws://192.168.42.1', port: '8000'};
     var socket2 = {name: 'socket2', url: 'ws://192.168.42.1', port: '8000'};
@@ -25,7 +25,22 @@ describe('websocketlivestream', function()
         });
     });
 
-    describe('adds new segment to mp4SegmentQueue', function()
+    describe('addNewSegmentToMpgSegmentQueue', function()
+    {
+        it('adds new segment to queue', function ()
+        {
+            wsLivestream.addNewSegmentToMpgSegmentQueue(newSegment);
+            expect(wsLivestream.mpgSegmentQueue).to.deep.equal(['filename1']);
+        });
+
+        it('does not add the segment, if already in queue', function()
+        {
+            wsLivestream.addNewSegmentToBroadcastQueue(newSegment);
+            expect(wsLivestream.mpgSegmentQueue).to.deep.equal(['filename1']);
+        });
+    });
+
+    describe('addNewSegmentToMp4SegmentQueue', function()
     {
         it('adds new segment to queue', function ()
         {
@@ -35,27 +50,12 @@ describe('websocketlivestream', function()
 
         it('does not add the segment, if already in queue', function()
         {
-            wsLivestream.addNewSegmentToBroadcastQueue(newSegment);
+            wsLivestream.addNewSegmentToMp4SegmentQueue(newSegment);
             expect(wsLivestream.mp4SegmentQueue).to.deep.equal(['filename1']);
         });
     });
 
-    describe('adds new segment to dashSegmentQueue', function()
-    {
-        it('adds new segment to queue', function ()
-        {
-            wsLivestream.addNewSegmentToDashSegmentQueue(newSegment);
-            expect(wsLivestream.dashSegmentQueue).to.deep.equal(['filename1']);
-        });
-
-        it('does not add the segment, if already in queue', function()
-        {
-            wsLivestream.addNewSegmentToDashSegmentQueue(newSegment);
-            expect(wsLivestream.dashSegmentQueue).to.deep.equal(['filename1']);
-        });
-    });
-
-    describe('adds new segment to broadcastQueue', function()
+    describe('addNewSegmentToBroadcastQueue', function()
     {
         it('adds new segment to queue', function ()
         {
