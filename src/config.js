@@ -17,6 +17,7 @@ config.intermediate2 = {};
 config.intermediate3 = {};
 config.intermediate4 = {};
 config.edge = {};
+config.loggingServer = {};
 
 // wss urls + ports
 config.ingress1.wssUrl  = '192.168.42.1';
@@ -51,5 +52,8 @@ config.edge.wsUrl1  = config.intermediate2.wssUrl;
 config.edge.wsPort1 = config.intermediate2.wssPort;
 config.edge.wsUrl2  = config.intermediate4.wssUrl;
 config.edge.wsPort2 = config.intermediate4.wssPort;
+
+config.loggingServer.wssUrl = '192.168.42.100';
+config.loggingServer.wssPort = '8900';
 
 module.exports = config;
