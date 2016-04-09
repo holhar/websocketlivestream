@@ -5,14 +5,14 @@
  */
 
 // module dependencies
-var Logger = require('./Logger'),
+var Logger = require('./logger'),
     WebSocket = require('ws'),
     WebSocketServer = require('ws').Server,
-    WebSocketLivestream = require('./WebSocketLivestream');
+    websocketlivestream = require('./websocketlivestream');
 
 // init objects
 var logger = new Logger(),
-    wsLivestream = new WebSocketLivestream();
+    wsLivestream = new websocketlivestream();
 
 // set CDN and server configuration
 wsLivestream.initLoggingServerConnection(process.argv[2]);

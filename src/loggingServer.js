@@ -4,9 +4,9 @@
  */
 
 var WebSocketServer = require('ws').Server,
-    WebSocketLivestream = require('./WebSocketLivestream');
+    websocketlivestream = require('./websocketlivestream');
 
-var wsLivestream = new WebSocketLivestream();
+var wsLivestream = new websocketlivestream();
 
 // set CDN and server configuration
 wsLivestream.initLoggingServer(process.argv[2]);
@@ -14,7 +14,7 @@ wsLivestream.initLoggingServer(process.argv[2]);
 var wss = new WebSocketServer({ port: wsLivestream.wssPort });
 
 console.log('Started ' + wsLivestream.name + ' at ' + wsLivestream.wssUrl + ':' + wsLivestream.wssPort);
-console.log('=========================================');
+console.log('============================================');
 
 wss.on('connection', function(ws)
 {

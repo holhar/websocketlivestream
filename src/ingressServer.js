@@ -8,18 +8,18 @@
 var _ = require('underscore'),
     fs = require('fs'),
     path = require('path'),
-    Logger = require('./Logger'),
+    logger = require('./logger'),
     sticky = require('sticky-session'), // use available cpu cores
     cluster = require('cluster'),       // required if worker id is needed
     express = require('express'),
     bodyParser = require('body-parser'),
     WebSocket = require('ws'),
     WebSocketServer = require('ws').Server,
-    WebSocketLivestream = require('./WebSocketLivestream');
+    websocketlivestream = require('./websocketlivestream');
 
 // init objects
-var logger = new Logger(),
-    wsLivestream = new WebSocketLivestream();
+var logger = new logger(),
+    wsLivestream = new websocketlivestream();
 
 // set CDN and server configuration
 wsLivestream.initLoggingServerConnection(process.argv[2]);
@@ -80,7 +80,6 @@ else
         wss.on('connection', function(ws)
         {
             wsLivestream.addSocket(ws);
-            console.log(ws);
             sendLog(logger.logNewClientConnection(wsLivestream.name, ws.upgradeReq.url));
 
             ws.on('message', function(message)

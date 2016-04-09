@@ -3,7 +3,7 @@
 'use strict';
 
 /*!
- * WebSocketLivestream: utilities for video livestream over websockets
+ * websocketlivestream: utilities for video livestream over websockets
  * Copyright(c) 2016 Holger Harms <kontakt@hash-developer.de>
  * MIT Licensed
  */
@@ -21,7 +21,7 @@ var _ = require('underscore'),
  * @constructor
  * @api public
  */
-function WebSocketLivestream()
+function websocketlivestream()
 {
     this.name = '';
 
@@ -57,7 +57,7 @@ function WebSocketLivestream()
  * @param {Object} socket-connection that has been initiated
  * @api public
  */
-WebSocketLivestream.prototype.addSocket = function(socket)
+websocketlivestream.prototype.addSocket = function(socket)
 {
     this.sockets.push(socket);
 };
@@ -68,7 +68,7 @@ WebSocketLivestream.prototype.addSocket = function(socket)
  * @param {Object} socket-connection to be removed
  * @api public
  */
-WebSocketLivestream.prototype.removeSocket = function(socket)
+websocketlivestream.prototype.removeSocket = function(socket)
 {
     var index = this.sockets.indexOf(socket);
     this.sockets.splice(index, 1);
@@ -80,7 +80,7 @@ WebSocketLivestream.prototype.removeSocket = function(socket)
  * @param {String} the new mp4 segment to be added
  * @api public
  */
-WebSocketLivestream.prototype.addNewSegmentToMpgSegmentQueue = function(newSegment)
+websocketlivestream.prototype.addNewSegmentToMpgSegmentQueue = function(newSegment)
 {
     for(var i=0, max = this.mpgSegmentQueue.length; i < max; i++) {
         if(this.mpgSegmentQueue[i] === newSegment)
@@ -97,7 +97,7 @@ WebSocketLivestream.prototype.addNewSegmentToMpgSegmentQueue = function(newSegme
  * @param {String} the new dash segment to be added
  * @api public
  */
-WebSocketLivestream.prototype.addNewSegmentToMp4SegmentQueue = function(newSegment)
+websocketlivestream.prototype.addNewSegmentToMp4SegmentQueue = function(newSegment)
 {
     for(var i=0, max = this.mp4SegmentQueue.length; i < max; i++) {
         if(this.mp4SegmentQueue[i] === newSegment)
@@ -114,7 +114,7 @@ WebSocketLivestream.prototype.addNewSegmentToMp4SegmentQueue = function(newSegme
  * @param {String} the new dash segment to be added
  * @api public
  */
-WebSocketLivestream.prototype.addNewSegmentToBroadcastQueue = function(newSegment)
+websocketlivestream.prototype.addNewSegmentToBroadcastQueue = function(newSegment)
 {
     for(var i=0, max = this.broadcastQueue.length; i < max; i++) {
         if(this.broadcastQueue[i] === newSegment)
@@ -131,7 +131,7 @@ WebSocketLivestream.prototype.addNewSegmentToBroadcastQueue = function(newSegmen
  * @param {Array} the queue from which the segment shall be removed
  * @api public
  */
-WebSocketLivestream.prototype.removeFirstSegmentInArray = function(queue)
+websocketlivestream.prototype.removeFirstSegmentInArray = function(queue)
 {
     switch(queue)
     {
@@ -152,7 +152,7 @@ WebSocketLivestream.prototype.removeFirstSegmentInArray = function(queue)
  *
  * @api public
  */
-WebSocketLivestream.prototype.updateLastBroadcastElement = function()
+websocketlivestream.prototype.updateLastBroadcastElement = function()
 {
     this.lastBroadcastElement = this.broadcastQueue[0];
 };
@@ -162,7 +162,7 @@ WebSocketLivestream.prototype.updateLastBroadcastElement = function()
  *
  * @api public
  */
-WebSocketLivestream.prototype.setupNextMpgTranscodingCycle = function()
+websocketlivestream.prototype.setupNextMpgTranscodingCycle = function()
 {
     var mostRecentMpgFile = this.getMostRecentFile(this.webcamStreamPath, /webcam_part\d+\.mpg/i);
     this.addNewSegmentToMpgSegmentQueue(mostRecentMpgFile);
@@ -173,7 +173,7 @@ WebSocketLivestream.prototype.setupNextMpgTranscodingCycle = function()
  *
  * @api public
  */
-WebSocketLivestream.prototype.transcodeNextMp4Segment = function()
+websocketlivestream.prototype.transcodeNextMp4Segment = function()
 {
     var mostRecentMp4File = this.getMostRecentFile(this.mp4SegmentsPath, /webcam_part\d+\.mp4/i);
 
@@ -187,7 +187,7 @@ WebSocketLivestream.prototype.transcodeNextMp4Segment = function()
  * @param {Object} regular expression to limit the files
  * @api public
  */
-WebSocketLivestream.prototype.getMostRecentFile = function(dir, regexp)
+websocketlivestream.prototype.getMostRecentFile = function(dir, regexp)
 {
     var files = fs.readdirSync(dir);
     var mpgSegments = [];
@@ -215,7 +215,7 @@ WebSocketLivestream.prototype.getMostRecentFile = function(dir, regexp)
  *
  * @api public
  */
-WebSocketLivestream.prototype.transcodeToMp4 = function()
+websocketlivestream.prototype.transcodeToMp4 = function()
 {
     this.isTranscodingToMp4 = true;
     var segment = this.webcamStreamPath + this.mpgSegmentQueue[0];
@@ -242,7 +242,7 @@ WebSocketLivestream.prototype.transcodeToMp4 = function()
  *
  * @api public
  */
-WebSocketLivestream.prototype.transcodeToDASH = function()
+websocketlivestream.prototype.transcodeToDASH = function()
 {
     var segment = this.mp4SegmentsPath + this.mp4SegmentQueue[0];
     var dashFilename = this.mp4SegmentQueue[0].split('.')[0];
@@ -264,7 +264,7 @@ WebSocketLivestream.prototype.transcodeToDASH = function()
  * @param {Object} stderr
  * @api public
  */
-WebSocketLivestream.prototype.puts = function(error, stdout, stderr)
+websocketlivestream.prototype.puts = function(error, stdout, stderr)
 {
     console.log(stdout);
 };
@@ -275,7 +275,7 @@ WebSocketLivestream.prototype.puts = function(error, stdout, stderr)
  *
  * @api public
  */
-WebSocketLivestream.prototype.checkOpenConnections = function()
+websocketlivestream.prototype.checkOpenConnections = function()
 {
     var counter = 0;
 
@@ -300,7 +300,7 @@ WebSocketLivestream.prototype.checkOpenConnections = function()
  * @param {String} path to the dash segments
  * @api public
  */
-WebSocketLivestream.prototype.initTranscoder = function(webcamStreamPath, mp4SegmentsPath, dashsegmentsPath)
+websocketlivestream.prototype.initTranscoder = function(webcamStreamPath, mp4SegmentsPath, dashsegmentsPath)
 {
     this.name = 'TRANSCODER';
     this.webcamStreamPath = webcamStreamPath;
@@ -315,7 +315,7 @@ WebSocketLivestream.prototype.initTranscoder = function(webcamStreamPath, mp4Seg
  * @param {String} determines the client server number that shall be used
  * @api public
  */
-WebSocketLivestream.prototype.initEdgeServer = function(wssUrlSwitch, clientNo)
+websocketlivestream.prototype.initEdgeServer = function(wssUrlSwitch, clientNo)
 {
     this.name = 'EDGE-' + clientNo;
     this.wssPort = config.edge.wssPort;
@@ -337,7 +337,7 @@ WebSocketLivestream.prototype.initEdgeServer = function(wssUrlSwitch, clientNo)
     }
     else if(wssUrlSwitch === 'network')
     {
-        this.wssUrl = config.egde.wssUrl;
+        this.wssUrl = config.edge.wssUrl;
 
         switch(clientNo)
         {
@@ -359,7 +359,7 @@ WebSocketLivestream.prototype.initEdgeServer = function(wssUrlSwitch, clientNo)
  * @param {String} the path to the das segments
  * @api public
  */
-WebSocketLivestream.prototype.initIngressServer = function(wssUrlSwitch, wssPortSwitch, dashSegmentsPath)
+websocketlivestream.prototype.initIngressServer = function(wssUrlSwitch, wssPortSwitch, dashSegmentsPath)
 {
     this.name = 'INGRESS-' + wssPortSwitch;
     this.dashSegmentsPath = dashSegmentsPath;
@@ -394,7 +394,7 @@ WebSocketLivestream.prototype.initIngressServer = function(wssUrlSwitch, wssPort
  * @param {String} determines the port of the WebSocket server to connect to
  * @api public
  */
-WebSocketLivestream.prototype.initIntermediateServer = function(wssUrlSwitch, wssPortSwitch)
+websocketlivestream.prototype.initIntermediateServer = function(wssUrlSwitch, wssPortSwitch)
 {
     this.name = 'INTERMEDIATE-' + wssPortSwitch;
 
@@ -461,7 +461,7 @@ WebSocketLivestream.prototype.initIntermediateServer = function(wssUrlSwitch, ws
  * @param {String} determines the url of the WebSocket server to connect to
  * @api public
  */
-WebSocketLivestream.prototype.initLoggingServer = function(wssUrlSwitch)
+websocketlivestream.prototype.initLoggingServer = function(wssUrlSwitch)
 {
     this.name = 'LOGGINER-SERVER';
     this.wssPort = config.loggingServer.wssPort;
@@ -481,7 +481,7 @@ WebSocketLivestream.prototype.initLoggingServer = function(wssUrlSwitch)
  * @param {String} determines the url of the WebSocket server to connect to
  * @api public
  */
-WebSocketLivestream.prototype.initLoggingServerConnection = function(wssUrlSwitch)
+websocketlivestream.prototype.initLoggingServerConnection = function(wssUrlSwitch)
 {
     this.wsLoggerPort = config.loggingServer.wssPort;
 
@@ -494,6 +494,6 @@ WebSocketLivestream.prototype.initLoggingServerConnection = function(wssUrlSwitc
     }
 };
 
-module.exports = WebSocketLivestream;
+module.exports = websocketlivestream;
 
 }());

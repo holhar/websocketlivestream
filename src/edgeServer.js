@@ -7,20 +7,20 @@
 var _ = require('underscore'),
     fs = require('fs'),
     path = require('path'),
-    Logger = require('./Logger'),
+    Logger = require('./logger'),
     sticky = require('sticky-session'), // enable usage of all available cpu cores
     cluster = require('cluster'),       // required if worker id is needed
     express = require('express'),
     bodyParser = require('body-parser'),
     WebSocket = require('ws'),
     WebSocketServer = require('ws').Server,
-    WebSocketLivestream = require('./WebSocketLivestream');
+    websocketlivestream = require('./websocketlivestream');
 
 // init objects
 var logger = new Logger(),
-    wsLivestream = new WebSocketLivestream(),
-    wsLivestream1 = new WebSocketLivestream(),
-    wsLivestream2 = new WebSocketLivestream();
+    wsLivestream = new websocketlivestream(),
+    wsLivestream1 = new websocketlivestream(),
+    wsLivestream2 = new websocketlivestream();
 
 // set CDN and server configuration
 wsLivestream.initLoggingServerConnection(process.argv[2]);
