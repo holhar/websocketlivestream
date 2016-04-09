@@ -1,22 +1,28 @@
 /*
-    CDN Ingress Server (can also emulate Edge Server)
-    - process.argv[2] = wssUrl switch
-    - process.argv[3] = wssPort switch
-*/
+ * CDN Ingress Server (can also emulate Edge Server)
+ * - process.argv[2] = wssUrl switch
+ * - process.argv[3] = wssPort switch
+ */
 
 // module dependencies
-var express = require('express'),
-    path = require('path'),
-    bodyParser = require('body-parser'),
+var _ = require('underscore'),
     fs = require('fs'),
-    _ = require('underscore'),
-    sticky = require('sticky-session'), // enable usage of all available cpu cores
+    path = require('path'),
+    Logger = require('./Logger'),
+    sticky = require('sticky-session'), // use available cpu cores
     cluster = require('cluster'),       // required if worker id is needed
-    WebSocketLivestream = require('./WebSocketLivestream'),
-    logger = require('./logger');
+    express = require('express'),
+    bodyParser = require('body-parser'),
+    WebSocket = require('ws'),
+    WebSocketServer = require('ws').Server,
+    WebSocketLivestream = require('./WebSocketLivestream');
+
+// init objects
+var logger = new Logger(),
+    wsLivestream = new WebSocketLivestream();
 
 // set CDN and server configuration
-var wsLivestream = new WebSocketLivestream();
+wsLivestream.initLoggingServerConnection(process.argv[2]);
 wsLivestream.initIngressServer(process.argv[2], process.argv[3], 'data/dashsegments/');
 
 // init webserver
@@ -50,41 +56,53 @@ app.get('/stream1', function(req, res) {
 // init node servers on all available cpu cores
 if (!sticky.listen(httpServer, wsLivestream.wssPort))
 {
-    httpServer.once('listening', function() {
-        logger.logWsServerPortListen(wsLivestream.wssPort);
-        logger.logWebserverURL(wsLivestream.wssUrl, wsLivestream.wssPort);
+    httpServer.once('listening', function() {});
+}
+else
+{
+    // init ws logger
+    var wsLogger = new WebSocket('ws://' + wsLivestream.wsLoggerUrl + ':' + wsLivestream.wsLoggerPort);
+
+    wsLogger.on('close', function close() {
+      console.log('disconnected from loggingServer');
     });
-} else {
 
-    // init ws-server
-    var WebSocketServer = require('ws').Server;
-    var wss = new WebSocketServer({ server: httpServer });
-    logger.logNewServerInstance( cluster.worker.id );
-
-    wss.on('connection', function(ws)
+    wsLogger.on('open', function open(ws)
     {
-        wsLivestream.addSocket(ws);
-        logger.logNewClientConnection(ws.upgradeReq.url);
+        if(cluster.worker.id == '1') {
+            sendLog(logger.logServerURL(wsLivestream.name, wsLivestream.wssUrl, wsLivestream.wssPort));
+        }
 
-        ws.on('message', function(message)
+        // init ws-server
+        var wss = new WebSocketServer({ server: httpServer });
+        sendLog(logger.logNewServerInstance(wsLivestream.name, cluster.worker.id));
+
+        wss.on('connection', function(ws)
         {
-            logger.logIncomingMessage(message);
+            wsLivestream.addSocket(ws);
+            console.log(ws);
+            sendLog(logger.logNewClientConnection(wsLivestream.name, ws.upgradeReq.url));
 
-            if(message === 'startStream')
+            ws.on('message', function(message)
             {
-                wsLivestream.doBroadcasting = true;
-                logger.logWatcherStartup();
-                startWatcher();
-            }
-            if(message === 'stopStream')
-            {
-                logger.logConnectionCheckup();
-                wsLivestream.checkOpenConnections();
-            }
-        });
+                sendLog(logger.logIncomingMessage(wsLivestream.name, message));
 
-        ws.on('close', function(ws) {
-            wsLivestream.removeSocket(ws);
+                if(message === 'startStream')
+                {
+                    wsLivestream.doBroadcasting = true;
+                    sendLog(logger.logWatcherStartup(wsLivestream.name));
+                    startWatcher();
+                }
+                if(message === 'stopStream')
+                {
+                    sendLog(logger.logConnectionCheckup(wsLivestream.name));
+                    wsLivestream.checkOpenConnections();
+                }
+            });
+
+            ws.on('close', function(ws) {
+                wsLivestream.removeSocket(ws);
+            });
         });
     });
 }
@@ -117,14 +135,14 @@ function broadcast()
 
             wsLivestream.isBroadcasting = true;
             wsLivestream.updateLastBroadcastElement();
-            logger.logSegmentBroadcasting(wsLivestream.broadcastQueue[0]);
+            sendLog(logger.logSegmentBroadcasting(wsLivestream.name, wsLivestream.broadcastQueue[0]));
 
             var readStream = fs.createReadStream(wsLivestream.dashSegmentsPath + wsLivestream.broadcastQueue[0]);
 
             readStream.on('data', function(data)
             {
                 wsLivestream.sendCount += 1;
-                logger.logOutgoingVideoData(wsLivestream.sendCount, data);
+                sendLog(logger.logOutgoingVideoData(wsLivestream.name, wsLivestream.sendCount, data));
 
                 wsLivestream.sockets.forEach(function(socket) {
                     if (socket.readyState == 1) {
@@ -138,5 +156,13 @@ function broadcast()
                 wsLivestream.isBroadcasting = false;
             });
         }
+    }
+}
+
+function sendLog(message)
+{
+    if(wsLogger.readyState === 1)
+    {
+        wsLogger.send(message, { binary: false, mask: true });
     }
 }

@@ -1,25 +1,32 @@
 /*
-    CDN Edge Server
-    - process.argv[2] = wssUrl switch
-*/
+ * CDN Edge Server
+ * - process.argv[2] = wssUrl switch
+ */
 
 // module dependencies
-var express = require('express'),
-    path = require('path'),
-    bodyParser = require('body-parser'),
+var _ = require('underscore'),
     fs = require('fs'),
-    _ = require('underscore'),
+    path = require('path'),
+    Logger = require('./Logger'),
     sticky = require('sticky-session'), // enable usage of all available cpu cores
     cluster = require('cluster'),       // required if worker id is needed
-    WebSocketLivestream = require('./WebSocketLivestream'),
-    logger = require('./logger');
+    express = require('express'),
+    bodyParser = require('body-parser'),
+    WebSocket = require('ws'),
+    WebSocketServer = require('ws').Server,
+    WebSocketLivestream = require('./WebSocketLivestream');
+
+// init objects
+var logger = new Logger(),
+    wsLivestream = new WebSocketLivestream(),
+    wsLivestream1 = new WebSocketLivestream(),
+    wsLivestream2 = new WebSocketLivestream();
 
 // set CDN and server configuration
-wsLivestream1 = new WebSocketLivestream();
-wsLivestream2 = new WebSocketLivestream();
+wsLivestream.initLoggingServerConnection(process.argv[2]);
+wsLivestream.initEdgeServer(process.argv[2], '1');
 wsLivestream1.initEdgeServer(process.argv[2], '1');
 wsLivestream2.initEdgeServer(process.argv[2], '2');
-
 
 // init webserver
 var app = express();
@@ -60,82 +67,91 @@ app.get('/stream2', function(req, res) {
 
 // init node servers on all available cpu cores
 if (!sticky.listen(httpServer, wsLivestream1.wssPort)) {
-    httpServer.once('listening', function() {
-        logger.logWsServerPortListen(wsLivestream1.wssPort);
-        logger.logWebserverURL(wsLivestream1.wssUrl, wsLivestream1.wssPort);
+    httpServer.once('listening', function() {});
+}
+else
+{
+    // init ws logger
+    var wsLogger = new WebSocket('ws://' + wsLivestream.wsLoggerUrl + ':' + wsLivestream.wsLoggerPort);
+
+    wsLogger.on('close', function close() {
+      console.log('disconnected from loggingServer');
     });
-} else {
 
-    // init ws-server
-    var WebSocketServer = require('ws').Server;
-    var wss = new WebSocketServer({ server: httpServer });
-    logger.logNewServerInstance( cluster.worker.id );
-
-    wss.on('connection', function(ws)
+    wsLogger.on('open', function open(ws)
     {
-        logger.logNewClientConnection(ws.upgradeReq.url);
-
-        if (ws.upgradeReq.url === '/stream1') {
-            wsLivestream1.addSocket(ws);
+        if(cluster.worker.id == '1') {
+            sendLog(logger.logServerURL(wsLivestream.name, wsLivestream.wssUrl, wsLivestream.wssPort));
         }
 
-        if (ws.upgradeReq.url === '/stream2') {
-            wsLivestream2.addSocket(ws);
-        }
+        // init ws-server
+        var wss = new WebSocketServer({ server: httpServer });
+        sendLog(logger.logNewServerInstance(wsLivestream.name, cluster.worker.id));
 
-        ws.on('message', function(message)
+        wss.on('connection', function(ws)
         {
-            logger.logIncomingMessage(message);
+            sendLog(logger.logNewClientConnection(wsLivestream.name, ws.upgradeReq.url));
 
-            switch(message)
-            {
-            case('startStream1'):
-                wsc1.send('startStream');
-                break;
-            case('startStream2'):
-                wsc2.send('startStream');
-                break;
-            case('stopStream1'):
-                wsc1.send('stopStream');
-                break;
-            case('stopStream2'):
-                wsc2.send('stopStream');
-                break;
+            if (ws.upgradeReq.url === '/stream1') {
+                wsLivestream1.addSocket(ws);
             }
+
+            if (ws.upgradeReq.url === '/stream2') {
+                wsLivestream2.addSocket(ws);
+            }
+
+            ws.on('message', function(message)
+            {
+                sendLog(logger.logIncomingMessage(wsLivestream.name, message));
+
+                switch(message)
+                {
+                case('startStream1'):
+                    wsc1.send('startStream');
+                    break;
+                case('startStream2'):
+                    wsc2.send('startStream');
+                    break;
+                case('stopStream1'):
+                    wsc1.send('stopStream');
+                    break;
+                case('stopStream2'):
+                    wsc2.send('stopStream');
+                    break;
+                }
+            });
+
+            ws.on('close', function() {
+                ws = null;
+            });
         });
 
-        ws.on('close', function() {
-            ws = null;
-        });
+        // init ws-client 1
+        var wsc1 = new WebSocket('ws://' + wsLivestream1.wsUrl + ':' + wsLivestream1.wsPort);
+        sendLog(logger.logWsClientStartup(wsLivestream.name, wsLivestream1.wsUrl, wsLivestream1.wsPort));
+
+        wsc1.binaryType = 'arraybuffer';
+        wsc1.onmessage = function(message)
+        {
+            wsLivestream1.receiveCount += 1;
+            sendLog(logger.logIncomingVideoData(wsLivestream.name, wsLivestream1.receiveCount, message.data));
+
+            broadcast(message, 'wsc1');
+        };
+
+        // init ws-client 2
+        var wsc2 = new WebSocket('ws://' + wsLivestream2.wsUrl + ':' + wsLivestream2.wsPort);
+        sendLog(logger.logWsClientStartup(wsLivestream.name, wsLivestream2.wsUrl, wsLivestream2.wsPort));
+
+        wsc2.binaryType = 'arraybuffer';
+        wsc2.onmessage = function(message)
+        {
+            wsLivestream2.receiveCount += 1;
+            sendLog(logger.logIncomingVideoData(wsLivestream.name, wsLivestream2.receiveCount, message.data));
+
+            broadcast(message, 'wsc2');
+        };
     });
-
-    // init ws-client 1
-    var WebSocket1 = require('ws');
-    var wsc1 = new WebSocket1('ws://' + wsLivestream1.wsUrl + ':' + wsLivestream1.wsPort);
-    logger.logWsClientStartup(wsLivestream1.wsUrl, wsLivestream1.wsPort);
-
-    wsc1.binaryType = 'arraybuffer';
-    wsc1.onmessage = function(message)
-    {
-        wsLivestream1.receiveCount += 1;
-        logger.logIncomingVideoData(wsLivestream1.receiveCount, message.data);
-
-        broadcast(message, 'wsc1');
-    };
-
-    // init ws-client 2
-    var WebSocket2 = require('ws');
-    var wsc2 = new WebSocket2('ws://' + wsLivestream2.wsUrl + ':' + wsLivestream2.wsPort);
-    logger.logWsClientStartup(wsLivestream2.wsUrl, wsLivestream2.wsPort);
-
-    wsc2.binaryType = 'arraybuffer';
-    wsc2.onmessage = function(message)
-    {
-        wsLivestream2.receiveCount += 1;
-        logger.logIncomingVideoData(wsLivestream2.receiveCount, message.data);
-
-        broadcast(message, 'wsc2');
-    };
 }
 
 // functions
@@ -143,7 +159,7 @@ function broadcast(message, wscNo)
 {
     if(wscNo === 'wsc1') {
         wsLivestream1.sendCount += 1;
-        logger.logOutgoingVideoData(wsLivestream1.sendCount, message.data);
+        sendLog(logger.logOutgoingVideoData(wsLivestream.name, wsLivestream1.sendCount, message.data));
 
         wsLivestream1.sockets.forEach(function(socket)
         {
@@ -155,7 +171,7 @@ function broadcast(message, wscNo)
 
     if(wscNo === 'wsc2') {
         wsLivestream2.sendCount += 1;
-        logger.logOutgoingVideoData(wsLivestream2.sendCount, message.data);
+        sendLog(logger.logOutgoingVideoData(wsLivestream.name, wsLivestream2.sendCount, message.data));
 
         wsLivestream2.sockets.forEach(function(socket)
         {
@@ -163,5 +179,13 @@ function broadcast(message, wscNo)
                 socket.send(message.data, { binary: true, mask: false });
             }
         });
+    }
+}
+
+function sendLog(message)
+{
+    if(wsLogger.readyState === 1)
+    {
+        wsLogger.send(message, { binary: false, mask: true });
     }
 }

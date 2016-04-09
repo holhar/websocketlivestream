@@ -3,7 +3,7 @@
 'use strict';
 
 /*!
- * websocketlivestream: utilities for video livestream over websockets
+ * WebSocketLivestream: utilities for video livestream over websockets
  * Copyright(c) 2016 Holger Harms <kontakt@hash-developer.de>
  * MIT Licensed
  */
@@ -23,6 +23,8 @@ var _ = require('underscore'),
  */
 function WebSocketLivestream()
 {
+    this.name = '';
+
     this.sockets = [];
     this.mpgSegmentQueue = [];
     this.mp4SegmentQueue = [];
@@ -45,6 +47,8 @@ function WebSocketLivestream()
     this.wssPort = '';
     this.wsUrl = '';
     this.wsPort = '';
+    this.wsLoggerUrl = '';
+    this.wsLoggerPort = '';
 }
 
 /**
@@ -229,6 +233,8 @@ WebSocketLivestream.prototype.transcodeToMp4 = function()
             console.log('an error occured: ' + err.message);
         })
         .run();
+
+    return mp4filename;
 };
 
 /**
@@ -289,13 +295,14 @@ WebSocketLivestream.prototype.checkOpenConnections = function()
 /**
  * Initializes transcoder setup
  *
- * @param {String} path to the mpg segments resulting from webcamstream
- * @param {String} path to the mp4 segments
+ * @param {String} determines path to the mpg segments resulting from webcamstream
+ * @param {String} determines path to the mp4 segments
  * @param {String} path to the dash segments
  * @api public
  */
 WebSocketLivestream.prototype.initTranscoder = function(webcamStreamPath, mp4SegmentsPath, dashsegmentsPath)
 {
+    this.name = 'TRANSCODER';
     this.webcamStreamPath = webcamStreamPath;
     this.mp4SegmentsPath = mp4SegmentsPath;
     this.dashsegmentsPath = dashsegmentsPath;
@@ -304,12 +311,13 @@ WebSocketLivestream.prototype.initTranscoder = function(webcamStreamPath, mp4Seg
 /**
  * Initializes edge server setup
  *
- * @param {String} the url of the WebSocket server to connect to
- * @param {String} the client server number that shall be used
+ * @param {String} determines the url of the WebSocket server to connect to
+ * @param {String} determines the client server number that shall be used
  * @api public
  */
 WebSocketLivestream.prototype.initEdgeServer = function(wssUrlSwitch, clientNo)
 {
+    this.name = 'EDGE-' + clientNo;
     this.wssPort = config.edge.wssPort;
 
     switch(clientNo)
@@ -346,13 +354,14 @@ WebSocketLivestream.prototype.initEdgeServer = function(wssUrlSwitch, clientNo)
 /**
  * Initializes ingress server setup
  *
- * @param {String} the url of the WebSocket server to connect to
- * @param {String} the port of the WebSocket server to connect to
+ * @param {String} determines the url of the WebSocket server to connect to
+ * @param {String} determines the port of the WebSocket server to connect to
  * @param {String} the path to the das segments
  * @api public
  */
 WebSocketLivestream.prototype.initIngressServer = function(wssUrlSwitch, wssPortSwitch, dashSegmentsPath)
 {
+    this.name = 'INGRESS-' + wssPortSwitch;
     this.dashSegmentsPath = dashSegmentsPath;
 
     if(wssUrlSwitch === 'local')
@@ -381,12 +390,14 @@ WebSocketLivestream.prototype.initIngressServer = function(wssUrlSwitch, wssPort
 /**
  * Initializes intermediate server setup
  *
- * @param {String} the url of the WebSocket server to connect to
- * @param {String} the port of the WebSocket server to connect to
+ * @param {String} determines the url of the WebSocket server to connect to
+ * @param {String} determines the port of the WebSocket server to connect to
  * @api public
  */
 WebSocketLivestream.prototype.initIntermediateServer = function(wssUrlSwitch, wssPortSwitch)
 {
+    this.name = 'INTERMEDIATE-' + wssPortSwitch;
+
     if(wssUrlSwitch === 'local')
     {
         this.wssUrl = config.localhost;
@@ -441,6 +452,45 @@ WebSocketLivestream.prototype.initIntermediateServer = function(wssUrlSwitch, ws
             this.wsPort = config.intermediate4.wsPort;
             break;
         }
+    }
+};
+
+/**
+ * Initializes logging server setup
+ *
+ * @param {String} determines the url of the WebSocket server to connect to
+ * @api public
+ */
+WebSocketLivestream.prototype.initLoggingServer = function(wssUrlSwitch)
+{
+    this.name = 'LOGGINER-SERVER';
+    this.wssPort = config.loggingServer.wssPort;
+
+    if(wssUrlSwitch === 'local') {
+        this.wssUrl = config.localhost;
+    }
+    else if (wssUrlSwitch === 'network')
+    {
+        this.wssUrl = config.loggingServer.wssUrl;
+    }
+};
+
+/**
+ * Initializes setup  of client connection to logging server
+ *
+ * @param {String} determines the url of the WebSocket server to connect to
+ * @api public
+ */
+WebSocketLivestream.prototype.initLoggingServerConnection = function(wssUrlSwitch)
+{
+    this.wsLoggerPort = config.loggingServer.wssPort;
+
+    if(wssUrlSwitch === 'local') {
+        this.wsLoggerUrl = config.localhost;
+    }
+    else if (wssUrlSwitch === 'network')
+    {
+        this.wsLoggerUrl = config.loggingServer.wssUrl;
     }
 };
 

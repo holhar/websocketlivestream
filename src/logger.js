@@ -1,73 +1,105 @@
-/*
-    Logging object
-*/
+(function()
+{
+'use strict';
 
-var logger = {
+/*!
+ * Logger: Logging data to one console
+ * Copyright(c) 2016 Holger Harms <kontakt@hash-developer.de>
+ * MIT Licensed
+ */
 
-    logWsServerPortListen: function(port)
-    {
-        console.log('server running and listening to port ' + port);
-    },
+/**
+ * Logger object
+ *
+ * @constructor
+ * @api public
+ */
+function Logger() {}
 
-    logWebserverURL: function(url, port)
-    {
-        console.log('webserver URL: ' + url + ':' + port);
-    },
-
-    logWsClientStartup: function(url, port)
-    {
-        console.log('ws-client connecting to ws-server: ' + url + ':' + port);
-    },
-
-    logNewServerInstance: function(serverId)
-    {
-        console.log('init ws-server instance ' + serverId);
-    },
-
-    logNewClientConnection: function(wsClientUrl)
-    {
-        console.log('new ws-client connected: ' + wsClientUrl);
-    },
-
-    logIncomingMessage: function(message)
-    {
-        console.log('new message from client: ' + message);
-    },
-
-    logWatcherStartup: function()
-    {
-        console.log('starting Watcher');
-    },
-
-    logConnectionCheckup: function()
-    {
-        console.log('check for open connections');
-    },
-
-    logIncomingVideoData: function(receiveCount, videoData)
-    {
-        console.log('type: ' + typeof videoData + ', size: ' + videoData.length);
-        console.log('receiving chunk of data: ' + receiveCount);
-    },
-
-    logOutgoingVideoData: function(sendCount, videoData)
-    {
-        console.log('type: ' + typeof videoData + ', size: ' + videoData.length);
-        console.log('sending chunk of data: ' + sendCount);
-    },
-
-    logSegmentBroadcasting: function(segment)
-    {
-        console.log('Broadcasting segment: ' + segment);
-    },
-
-    logTranscodingStartup: function(webcamStreamPath, mp4SegmentsPath)
-    {
-        console.log('Start watching following folders:');
-        console.log('- ' + webcamStreamPath);
-        console.log('- ' + mp4SegmentsPath);
-    }
-
+Logger.prototype.logServerURL = function(name, url, port)
+{
+    var message = name + ': server running - URL: ' + url + ':' + port;
+    console.log(message);
+    return message;
 };
 
-module.exports = logger;
+Logger.prototype.logWsClientStartup = function(name, url, port)
+{
+    var message = name + ': ws-client connecting to ws-server: ' + url + ':' + port;
+    console.log(message);
+    return message;
+};
+
+Logger.prototype.logNewServerInstance = function(name, serverId)
+{
+    var message = name + ': init ws-server instance ' + serverId;
+    console.log(message);
+    return message;
+};
+
+Logger.prototype.logNewClientConnection = function(name, wsClientUrl)
+{
+    var message = name + ': new ws-client connected';
+    console.log(message);
+    return message;
+};
+
+Logger.prototype.logIncomingMessage = function(name, clientMessage)
+{
+    var message = name + ': new message from client: ' + clientMessage;
+    console.log(message);
+    return message;
+};
+
+Logger.prototype.logWatcherStartup = function(name)
+{
+    var message = name + ': starting Watcher';
+    console.log(message);
+    return message;
+};
+
+Logger.prototype.logConnectionCheckup = function(name)
+{
+    var message = name + ': check for open connections';
+    console.log(message);
+    return message;
+};
+
+Logger.prototype.logIncomingVideoData = function(name, receiveCount, videoData)
+{
+    var message = name + ': type: ' + typeof videoData + ', size: ' + videoData.length + ', receiving chunk of data: ' + receiveCount;
+    console.log(message);
+    return message;
+};
+
+Logger.prototype.logOutgoingVideoData = function(name, sendCount, videoData)
+{
+    var message = name + ': type: ' + typeof videoData + ', size: ' + videoData.length + ', sending chunk of data: ' + sendCount;
+    console.log(message);
+    return message;
+};
+
+Logger.prototype.logSegmentBroadcasting = function(name, segment)
+{
+    var message = name + ': Broadcasting segment: ' + segment;
+    console.log(message);
+    return message;
+};
+
+Logger.prototype.logTranscodingStartup = function(name, webcamStreamPath, mp4SegmentsPath)
+{
+    var message = name + ': Start watching following folders:\n - ' + webcamStreamPath + '\n - ' + mp4SegmentsPath;
+    console.log(message);
+    return message;
+};
+
+Logger.prototype.logTranscodingOfSegment = function(name, segment)
+{
+    var message = name + ': transcoding dash-segment: ' + segment;
+    console.log(message);
+    return message;
+};
+
+module.exports = Logger;
+
+}());
