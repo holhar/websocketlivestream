@@ -102,8 +102,9 @@ else
 
             ws.on('message', function(message)
             {
-                sendLog(logger.logIncomingMessage(wsLivestream.name, message));
+                // sendLog(logger.logIncomingMessage(wsLivestream.name, message));
 
+                // TODO: only send stopStream if there are no client connections
                 switch(message)
                 {
                 case('startStream1'):
@@ -113,16 +114,16 @@ else
                     wsc2.send('startStream');
                     break;
                 case('stopStream1'):
-                    wsc1.send('stopStream');
+                    // wsc1.send('stopStream');
                     break;
                 case('stopStream2'):
-                    wsc2.send('stopStream');
+                    // wsc2.send('stopStream');
                     break;
                 }
             });
 
             ws.on('close', function() {
-                ws = null;
+                this.close();
             });
         });
 
@@ -133,8 +134,8 @@ else
         wsc1.binaryType = 'arraybuffer';
         wsc1.onmessage = function(message)
         {
-            wsLivestream1.receiveCount += 1;
-            sendLog(logger.logIncomingVideoData(wsLivestream.name, wsLivestream1.receiveCount, message.data));
+            // wsLivestream1.receiveCount += 1;
+            // sendLog(logger.logIncomingVideoData(wsLivestream.name, wsLivestream1.receiveCount, message.data));
 
             broadcast(message, 'wsc1');
         };
@@ -146,8 +147,8 @@ else
         wsc2.binaryType = 'arraybuffer';
         wsc2.onmessage = function(message)
         {
-            wsLivestream2.receiveCount += 1;
-            sendLog(logger.logIncomingVideoData(wsLivestream.name, wsLivestream2.receiveCount, message.data));
+            // wsLivestream2.receiveCount += 1;
+            // sendLog(logger.logIncomingVideoData(wsLivestream.name, wsLivestream2.receiveCount, message.data));
 
             broadcast(message, 'wsc2');
         };
@@ -158,8 +159,8 @@ else
 function broadcast(message, wscNo)
 {
     if(wscNo === 'wsc1') {
-        wsLivestream1.sendCount += 1;
-        sendLog(logger.logOutgoingVideoData(wsLivestream.name, wsLivestream1.sendCount, message.data));
+        // wsLivestream1.sendCount += 1;
+        // sendLog(logger.logOutgoingVideoData(wsLivestream.name, wsLivestream1.sendCount, message.data));
 
         wsLivestream1.sockets.forEach(function(socket)
         {
@@ -170,8 +171,8 @@ function broadcast(message, wscNo)
     }
 
     if(wscNo === 'wsc2') {
-        wsLivestream2.sendCount += 1;
-        sendLog(logger.logOutgoingVideoData(wsLivestream.name, wsLivestream2.sendCount, message.data));
+        // wsLivestream2.sendCount += 1;
+        // sendLog(logger.logOutgoingVideoData(wsLivestream.name, wsLivestream2.sendCount, message.data));
 
         wsLivestream2.sockets.forEach(function(socket)
         {

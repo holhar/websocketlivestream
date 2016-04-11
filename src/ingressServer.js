@@ -84,7 +84,7 @@ else
 
             ws.on('message', function(message)
             {
-                sendLog(logger.logIncomingMessage(wsLivestream.name, message));
+                // sendLog(logger.logIncomingMessage(wsLivestream.name, message));
 
                 if(message === 'startStream')
                 {
@@ -95,7 +95,7 @@ else
                 if(message === 'stopStream')
                 {
                     sendLog(logger.logConnectionCheckup(wsLivestream.name));
-                    wsLivestream.checkOpenConnections();
+                    // wsLivestream.checkOpenConnections();
                 }
             });
 
@@ -140,8 +140,8 @@ function broadcast()
 
             readStream.on('data', function(data)
             {
-                wsLivestream.sendCount += 1;
-                sendLog(logger.logOutgoingVideoData(wsLivestream.name, wsLivestream.sendCount, data));
+                // wsLivestream.sendCount += 1;
+                // sendLog(logger.logOutgoingVideoData(wsLivestream.name, wsLivestream.sendCount, data));
 
                 wsLivestream.sockets.forEach(function(socket) {
                     if (socket.readyState == 1) {
