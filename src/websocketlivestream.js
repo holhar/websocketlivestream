@@ -274,6 +274,7 @@ websocketlivestream.prototype.puts = function(error, stdout, stderr)
  * and sets 'doBroadcasting' flag to false if all sockets are not open
  *
  * @api public
+ * TODO: wrong logic, edit this!
  */
 websocketlivestream.prototype.checkOpenConnections = function()
 {
@@ -405,21 +406,29 @@ websocketlivestream.prototype.initIntermediateServer = function(wssUrlSwitch, ws
 
         switch(wssPortSwitch)
         {
-        case('1'):
-            this.wssPort = config.intermediate1.wssPort;
-            this.wsPort = config.intermediate1.wsPort;
+        case('11'):
+            this.wssPort = config.intermediate11.wssPort;
+            this.wsPort = config.intermediate11.wsPort;
             break;
-        case('2'):
-            this.wssPort = config.intermediate2.wssPort;
-            this.wsPort = config.intermediate2.wsPort;
+        case('12'):
+            this.wssPort = config.intermediate12.wssPort;
+            this.wsPort = config.intermediate12.wsPort;
             break;
-        case('3'):
-            this.wssPort = config.intermediate3.wssPort;
-            this.wsPort = config.intermediate3.wsPort;
+        case('21'):
+            this.wssPort = config.intermediate21.wssPort;
+            this.wsPort = config.intermediate21.wsPort;
             break;
-        case('4'):
-            this.wssPort = config.intermediate4.wssPort;
-            this.wsPort = config.intermediate4.wsPort;
+        case('22'):
+            this.wssPort = config.intermediate22.wssPort;
+            this.wsPort = config.intermediate22.wsPort;
+            break;
+        case('31'):
+            this.wssPort = config.intermediate31.wssPort;
+            this.wsPort = config.intermediate31.wsPort;
+            break;
+        case('32'):
+            this.wssPort = config.intermediate32.wssPort;
+            this.wsPort = config.intermediate32.wsPort;
             break;
         }
     }
@@ -427,29 +436,41 @@ websocketlivestream.prototype.initIntermediateServer = function(wssUrlSwitch, ws
     {
         switch(wssPortSwitch)
         {
-        case('1'):
-            this.wssUrl = config.intermediate1.wssUrl;
-            this.wsUrl = config.intermediate1.wsUrl;
-            this.wssPort = config.intermediate1.wssPort;
+        case('11'):
+            this.wssUrl = config.intermediate11.wssUrl;
+            this.wsUrl = config.intermediate11.wsUrl;
+            this.wssPort = config.intermediate11.wssPort;
             this.wsPort = config.intermediate1.wsPort;
             break;
-        case('2'):
-            this.wssUrl = config.intermediate2.wssUrl;
-            this.wsUrl = config.intermediate2.wsUrl;
-            this.wssPort = config.intermediate2.wssPort;
-            this.wsPort = config.intermediate2.wsPort;
+        case('12'):
+            this.wssUrl = config.intermediate12.wssUrl;
+            this.wsUrl = config.intermediate12.wsUrl;
+            this.wssPort = config.intermediate12.wssPort;
+            this.wsPort = config.intermediate12.wsPort;
             break;
-        case('3'):
-            this.wssUrl = config.intermediate3.wssUrl;
-            this.wsUrl = config.intermediate3.wsUrl;
-            this.wssPort = config.intermediate3.wssPort;
-            this.wsPort = config.intermediate3.wsPort;
+        case('22'):
+            this.wssUrl = config.intermediate21.wssUrl;
+            this.wsUrl = config.intermediate21.wsUrl;
+            this.wssPort = config.intermediate21.wssPort;
+            this.wsPort = config.intermediate21.wsPort;
             break;
-        case('4'):
-            this.wssUrl = config.intermediate4.wssUrl;
-            this.wsUrl = config.intermediate4.wsUrl;
-            this.wssPort = config.intermediate4.wssPort;
-            this.wsPort = config.intermediate4.wsPort;
+        case('22'):
+            this.wssUrl = config.intermediate22.wssUrl;
+            this.wsUrl = config.intermediate22.wsUrl;
+            this.wssPort = config.intermediate22.wssPort;
+            this.wsPort = config.intermediate22.wsPort;
+            break;
+        case('31'):
+            this.wssUrl = config.intermediate31.wssUrl;
+            this.wsUrl = config.intermediate31.wsUrl;
+            this.wssPort = config.intermediate31.wssPort;
+            this.wsPort = config.intermediate31.wsPort;
+            break;
+        case('32'):
+            this.wssUrl = config.intermediate32.wssUrl;
+            this.wsUrl = config.intermediate32.wsUrl;
+            this.wssPort = config.intermediate32.wssPort;
+            this.wsPort = config.intermediate32.wsPort;
             break;
         }
     }
