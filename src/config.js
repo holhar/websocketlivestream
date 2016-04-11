@@ -12,10 +12,12 @@ config.localhost =  'localhost';
 
 config.ingress1 = {};
 config.ingress2 = {};
-config.intermediate1 = {};
-config.intermediate2 = {};
-config.intermediate3 = {};
-config.intermediate4 = {};
+config.intermediate11 = {};
+config.intermediate12 = {};
+config.intermediate22 = {};
+config.intermediate21 = {};
+config.intermediate31 = {};
+config.intermediate32 = {};
 config.edge = {};
 config.loggingServer = {};
 
@@ -26,32 +28,39 @@ config.ingress1.wssPort = '8001';
 config.ingress2.wssUrl  = '192.168.0.13';
 config.ingress2.wssPort = '8002';
 
-config.intermediate1.wssUrl  = '192.168.0.14';
-config.intermediate1.wssPort = '8011';
-config.intermediate1.wsUrl   = config.ingress1.wssUrl;
-config.intermediate1.wsPort  = config.ingress1.wssPort;
+config.intermediate11.wssUrl  = '192.168.0.14';
+config.intermediate11.wssPort = '8011';
+config.intermediate11.wsUrl   = config.ingress1.wssUrl;
+config.intermediate11.wsPort  = config.ingress1.wssPort;
+config.intermediate12.wssUrl  = '192.168.0.14';
+config.intermediate12.wssPort = '8012';
+config.intermediate12.wsUrl   = config.ingress2.wssUrl;
+config.intermediate12.wsPort  = config.ingress2.wssPort;
 
-config.intermediate2.wssUrl  = config.intermediate1.wssUrl;
-config.intermediate2.wssPort = '8012';
-config.intermediate2.wsUrl   = config.intermediate1.wssUrl;
-config.intermediate2.wsPort  = config.intermediate1.wssPort;
+config.intermediate21.wssUrl  = '192.168.0.13';
+config.intermediate21.wssPort = '8013';
+config.intermediate21.wsUrl   = config.intermediate11.wssUrl;
+config.intermediate21.wsPort  = config.intermediate11.wssPort;
+config.intermediate22.wssUrl  = '192.168.0.13';
+config.intermediate22.wssPort = '8014';
+config.intermediate22.wsUrl   = config.intermediate12.wssUrl;
+config.intermediate22.wsPort  = config.intermediate12.wssPort;
 
-config.intermediate3.wssUrl  = '192.168.0.14';
-config.intermediate3.wssPort = '8013';
-config.intermediate3.wsUrl   = config.ingress2.wssUrl;
-config.intermediate3.wsPort  = config.ingress2.wssPort;
-
-config.intermediate4.wssUrl  = config.intermediate3.wssUrl;
-config.intermediate4.wssPort = '8014';
-config.intermediate4.wsUrl   = config.intermediate3.wssUrl;
-config.intermediate4.wsPort  = config.intermediate3.wssPort;
+config.intermediate31.wssUrl  = '192.168.0.14';
+config.intermediate31.wssPort = '8015';
+config.intermediate31.wsUrl   = config.intermediate21.wssUrl;
+config.intermediate31.wsPort  = config.intermediate21.wssPort;
+config.intermediate32.wssUrl  = '192.168.0.14';
+config.intermediate32.wssPort = '8016';
+config.intermediate32.wsUrl   = config.intermediate22.wssUrl;
+config.intermediate32.wsPort  = config.intermediate22.wssPort;
 
 config.edge.wssUrl  = '192.168.0.13';
 config.edge.wssPort = '8020';
-config.edge.wsUrl1  = config.intermediate2.wssUrl;
-config.edge.wsPort1 = config.intermediate2.wssPort;
-config.edge.wsUrl2  = config.intermediate4.wssUrl;
-config.edge.wsPort2 = config.intermediate4.wssPort;
+config.edge.wsUrl1  = config.intermediate31.wssUrl;
+config.edge.wsPort1 = config.intermediate31.wssPort;
+config.edge.wsUrl2  = config.intermediate32.wssUrl;
+config.edge.wsPort2 = config.intermediate32.wssPort;
 
 config.loggingServer.wssUrl = '192.168.0.14';
 config.loggingServer.wssPort = '8900';

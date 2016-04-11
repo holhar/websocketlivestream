@@ -1,3 +1,7 @@
+(function()
+{
+'use strict';
+
 document.addEventListener('DOMContentLoaded', function() {
 
     var streamId = document.querySelector('.hidden').getAttribute('id'),
@@ -55,6 +59,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function fillSourceBuffer()
     {
+        var chunk;
+
         if (!sourceBuffer.updating)
         {
             // logFillSourceBufferData();
@@ -116,6 +122,9 @@ document.addEventListener('DOMContentLoaded', function() {
         ws.send('stopStream' + streamId, { binary: false, mask: true});
         console.log('closing connection');
         ws.close();
+        location.reload();
     };
 
 });
+
+})();

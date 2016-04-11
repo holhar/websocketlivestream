@@ -19,10 +19,12 @@ fi
 
 if [ "$1" = "local" -o "$1" = "network" ]
 then
-    ttab -w ./serverStart.sh $1 intermediate 1
-    ttab -w ./serverStart.sh $1 intermediate 2
-    ttab -w ./serverStart.sh $1 intermediate 3
-    ttab -w ./serverStart.sh $1 intermediate 4
+    ttab -w ./serverStart.sh $1 intermediate 11
+    ttab -w ./serverStart.sh $1 intermediate 12
+    ttab -w ./serverStart.sh $1 intermediate 21
+    ttab -w ./serverStart.sh $1 intermediate 22
+    ttab -w ./serverStart.sh $1 intermediate 31
+    ttab -w ./serverStart.sh $1 intermediate 32
 else
     echo "Wrong argument provided"
     echo "One argument needed:"
