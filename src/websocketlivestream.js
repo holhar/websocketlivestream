@@ -440,7 +440,7 @@ websocketlivestream.prototype.initIntermediateServer = function(wssUrlSwitch, ws
             this.wssUrl = config.intermediate11.wssUrl;
             this.wsUrl = config.intermediate11.wsUrl;
             this.wssPort = config.intermediate11.wssPort;
-            this.wsPort = config.intermediate1.wsPort;
+            this.wsPort = config.intermediate11.wsPort;
             break;
         case('12'):
             this.wssUrl = config.intermediate12.wssUrl;
