@@ -25,7 +25,7 @@ config.loggingServer = {};
 config.ingress1.wssUrl  = '192.168.178.45';
 config.ingress1.wssPort = '8001';
 
-config.ingress2.wssUrl  = '192.168.178.43';
+config.ingress2.wssUrl  = '192.168.178.37';
 config.ingress2.wssPort = '8002';
 
 config.intermediate11.wssUrl  = '192.168.178.44';
