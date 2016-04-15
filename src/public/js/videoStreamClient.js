@@ -111,20 +111,6 @@ document.addEventListener('DOMContentLoaded', function() {
             ws = new WebSocket('ws://' + window.location.host + '/stream' + streamId);
     }
 
-    document.getElementById('btn1').onclick = function startStream()
-    {
-        console.log('sending startStream Query');
-        ws.send('startStream' + streamId, { binary: false, mask: true});
-    };
-
-    document.getElementById('btn2').onclick = function stopStream() {
-        console.log('sending stopStream Query');
-        ws.send('stopStream' + streamId, { binary: false, mask: true});
-        console.log('closing connection');
-        ws.close();
-        location.reload();
-    };
-
 });
 
 })();

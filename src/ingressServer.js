@@ -82,6 +82,10 @@ else
             wsLivestream.addSocket(ws);
             sendLog(logger.logNewClientConnection(wsLivestream.name, ws.upgradeReq.url));
 
+            wsLivestream.doBroadcasting = true;
+            sendLog(logger.logWatcherStartup(wsLivestream.name));
+            startWatcher();
+
             ws.on('message', function(message)
             {
                 // sendLog(logger.logIncomingMessage(wsLivestream.name, message));
@@ -95,7 +99,7 @@ else
                 if(message === 'stopStream')
                 {
                     sendLog(logger.logConnectionCheckup(wsLivestream.name));
-                    // wsLivestream.checkOpenConnections();
+                    wsLivestream.checkOpenConnections();
                 }
             });
 

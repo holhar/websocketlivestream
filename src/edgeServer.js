@@ -114,10 +114,10 @@ else
                     wsc2.send('startStream');
                     break;
                 case('stopStream1'):
-                    // wsc1.send('stopStream');
+                    wsc1.send('stopStream');
                     break;
                 case('stopStream2'):
-                    // wsc2.send('stopStream');
+                    wsc2.send('stopStream');
                     break;
                 }
             });
