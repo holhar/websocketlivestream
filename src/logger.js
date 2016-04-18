@@ -74,7 +74,7 @@ logger.prototype.logIncomingVideoData = function(name, receiveCount, videoData)
 
 logger.prototype.logOutgoingVideoData = function(name, sendCount, videoData)
 {
-    var message = name + ': type: ' + typeof videoData + ', size: ' + videoData.length + ', sending chunk of data: ' + sendCount;
+    var message = name + ' Sending Data: size: ' + videoData.length + ', sending chunk of data: ' + sendCount;
     console.log(message);
     return message;
 };

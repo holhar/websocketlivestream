@@ -63,8 +63,8 @@ wsLogger.on('open', function open(ws)
 // functions
 function broadcast(message)
 {
-    // wsLivestream.sendCount += 1;
-    // sendLog(logger.logOutgoingVideoData(wsLivestream.name, wsLivestream.sendCount, message.data));
+    wsLivestream.sendCount += 1;
+    sendLog(logger.logOutgoingVideoData(wsLivestream.name, wsLivestream.sendCount, message.data));
 
     wsLivestream.sockets.forEach(function(socket) {
         if(socket.readyState == 1) {
