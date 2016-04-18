@@ -7,8 +7,8 @@
 
 var config = {};
 
-// localhost Setup
-config.localhost =  'localhost';
+config.localhost = 'localhost';
+config.livestream = true;
 
 config.ingress1 = {};
 config.ingress2 = {};
@@ -20,6 +20,9 @@ config.intermediate31 = {};
 config.intermediate32 = {};
 config.edge = {};
 config.loggingServer = {};
+
+config.filenames = {};
+config.paths = {};
 
 // wss urls + ports
 // OB
@@ -71,5 +74,16 @@ config.edge.wsPort2 = config.intermediate32.wssPort;
 // HH
 config.loggingServer.wssUrl = '192.168.178.43';
 config.loggingServer.wssPort = '8900';
+
+// filenames
+config.filenames.mpgSegmentRegExp = /webcam_part\d+\.mpg/i;
+config.filenames.mp4SegmentRegExp = /webcam_part\d+\.mp4/i;
+config.filenames.dashSegmentRegExp = /webcam_part\d+_dashinit\.mp4/i;
+
+// paths
+config.paths.mpgSegmentPath = '../mpgsegments/';
+config.paths.mp4SegmentPath = '../mp4segments/';
+config.paths.dashSegmentPath = './';
+config.paths.ingressDashSegmentPath = 'data/dashsegments/';
 
 module.exports = config;

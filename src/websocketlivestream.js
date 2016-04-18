@@ -24,6 +24,7 @@ var _ = require('underscore'),
 function websocketlivestream()
 {
     this.name = '';
+    this.livestream = false;
 
     this.sockets = [];
     this.mpgSegmentQueue = [];
@@ -36,9 +37,13 @@ function websocketlivestream()
     this.doBroadcasting = false;
     this.lastBroadcastElement = '';
 
-    this.webcamStreamPath = '';
-    this.mp4SegmentsPath = '';
-    this.dashSegmentsPath = '';
+    this.mpgSegmentPath = '';
+    this.mp4SegmentPath = '';
+    this.dashSegmentPath = '';
+
+    this.mpgSegmentRegExp = '';
+    this.mp4SegmentRegExp = '';
+    this.dashSegmentRegExp = '';
 
     this.receiveCount = 0;
     this.sendCount = 0;
@@ -164,7 +169,7 @@ websocketlivestream.prototype.updateLastBroadcastElement = function()
  */
 websocketlivestream.prototype.setupNextMpgTranscodingCycle = function()
 {
-    var mostRecentMpgFile = this.getMostRecentFile(this.webcamStreamPath, /webcam_part\d+\.mpg/i);
+    var mostRecentMpgFile = this.getMostRecentFile(this.mpgSegmentPath, this.mpgSegmentRegExp);
     this.addNewSegmentToMpgSegmentQueue(mostRecentMpgFile);
 };
 
@@ -173,9 +178,9 @@ websocketlivestream.prototype.setupNextMpgTranscodingCycle = function()
  *
  * @api public
  */
-websocketlivestream.prototype.transcodeNextMp4Segment = function()
+websocketlivestream.prototype.setupNextMp4TranscodingCycle = function()
 {
-    var mostRecentMp4File = this.getMostRecentFile(this.mp4SegmentsPath, /webcam_part\d+\.mp4/i);
+    var mostRecentMp4File = this.getMostRecentFile(this.mp4SegmentPath, this.mp4SegmentRegExp);
 
     this.addNewSegmentToMp4SegmentQueue(mostRecentMp4File);
 };
@@ -193,21 +198,29 @@ websocketlivestream.prototype.getMostRecentFile = function(dir, regexp)
     var mpgSegments = [];
     var match = '';
 
-    for (var i = 0; i < files.length; i++) {
+    if(this)
+    for (var i = 0, max = files.length; i < max; i++) {
         if (files[i].match(regexp)) {
             match = files[i].match(regexp);
             mpgSegments.push(match[0]);
         }
     }
 
-    // using underscore-library for finding recent file
-    var mostRecentFile = _.max(mpgSegments, function(f) {
-        var fullpath = path.join(dir, f);
+    if(this.livestream)
+    {
+        // using underscore-library for finding recent file
+        var mostRecentFile = _.max(mpgSegments, function(f) {
+            var fullpath = path.join(dir, f);
 
-        // replace ctime (creation time) with mtime for modification time
-        return fs.statSync(fullpath).ctime;
-    });
-    return mostRecentFile;
+            // replace ctime (creation time) with mtime for modification time
+            return fs.statSync(fullpath).ctime;
+        });
+        return mostRecentFile;
+    }
+    else
+    {
+        return mpgSegments.pop();
+    }
 };
 
 /**
@@ -218,12 +231,12 @@ websocketlivestream.prototype.getMostRecentFile = function(dir, regexp)
 websocketlivestream.prototype.transcodeToMp4 = function()
 {
     this.isTranscodingToMp4 = true;
-    var segment = this.webcamStreamPath + this.mpgSegmentQueue[0];
+    var segment = this.mpgSegmentPath + this.mpgSegmentQueue[0];
     var mp4filename = this.mpgSegmentQueue[0].split('.')[0];
     var myself = this;
 
     var command = ffmpeg(segment)
-        .output(this.mp4SegmentsPath + mp4filename + '.mp4')
+        .output(this.mp4SegmentPath + mp4filename + '.mp4')
         .on('end', function() {
             console.log('finished MP4 transcoding; segment: ' + segment);
             myself.removeFirstSegmentInArray('mpgSegmentQueue');
@@ -244,16 +257,16 @@ websocketlivestream.prototype.transcodeToMp4 = function()
  */
 websocketlivestream.prototype.transcodeToDASH = function()
 {
-    var segment = this.mp4SegmentsPath + this.mp4SegmentQueue[0];
+    this.isTranscodingToDASH = true;
+
+    var segment = this.mp4SegmentPath + this.mp4SegmentQueue[0];
     var dashFilename = this.mp4SegmentQueue[0].split('.')[0];
 
     exec('mp4box -dash 1500 -frag 500 -rap ' + segment, this.puts);
 
-    var myself = this;
-
-    setTimeout(function() {
-        myself.removeFirstSegmentInArray('mp4SegmentQueue');
-    }, 2000);
+    this.removeFirstSegmentInArray('mp4SegmentQueue');
+    this.isTranscodingToDASH = false;
+    return;
 };
 
 /**
@@ -296,17 +309,19 @@ websocketlivestream.prototype.checkOpenConnections = function()
 /**
  * Initializes transcoder setup
  *
- * @param {String} determines path to the mpg segments resulting from webcamstream
- * @param {String} determines path to the mp4 segments
- * @param {String} path to the dash segments
  * @api public
  */
-websocketlivestream.prototype.initTranscoder = function(webcamStreamPath, mp4SegmentsPath, dashsegmentsPath)
+websocketlivestream.prototype.initTranscoder = function(instanceId)
 {
-    this.name = 'TRANSCODER';
-    this.webcamStreamPath = webcamStreamPath;
-    this.mp4SegmentsPath = mp4SegmentsPath;
-    this.dashsegmentsPath = dashsegmentsPath;
+    this.name = 'TRANSCODER-' + instanceId;
+    this.livestream = config.livestream;
+
+    this.mpgSegmentPath = config.paths.mpgSegmentPath;
+    this.mp4SegmentPath = config.paths.mp4SegmentPath;
+    this.dashsegmentPath = config.paths.dashSegmentPath;
+
+    this.mpgSegmentRegExp = config.filenames.mpgSegmentRegExp;
+    this.mp4SegmentRegExp = config.filenames.mp4SegmentRegExp;
 };
 
 /**
@@ -319,6 +334,7 @@ websocketlivestream.prototype.initTranscoder = function(webcamStreamPath, mp4Seg
 websocketlivestream.prototype.initEdgeServer = function(wssUrlSwitch, clientNo)
 {
     this.name = 'EDGE-' + clientNo;
+    this.livestream = config.livestream;
     this.wssPort = config.edge.wssPort;
 
     switch(clientNo)
@@ -357,13 +373,14 @@ websocketlivestream.prototype.initEdgeServer = function(wssUrlSwitch, clientNo)
  *
  * @param {String} determines the url of the WebSocket server to connect to
  * @param {String} determines the port of the WebSocket server to connect to
- * @param {String} the path to the das segments
  * @api public
  */
-websocketlivestream.prototype.initIngressServer = function(wssUrlSwitch, wssPortSwitch, dashSegmentsPath)
+websocketlivestream.prototype.initIngressServer = function(wssUrlSwitch, wssPortSwitch)
 {
     this.name = 'INGRESS-' + wssPortSwitch;
-    this.dashSegmentsPath = dashSegmentsPath;
+    this.livestream = config.livestream;
+    this.dashSegmentRegExp = config.filenames.dashSegmentRegExp;
+    this.dashSegmentPath = config.paths.ingressDashSegmentPath;
 
     if(wssUrlSwitch === 'local')
     {
@@ -398,6 +415,7 @@ websocketlivestream.prototype.initIngressServer = function(wssUrlSwitch, wssPort
 websocketlivestream.prototype.initIntermediateServer = function(wssUrlSwitch, wssPortSwitch)
 {
     this.name = 'INTERMEDIATE-' + wssPortSwitch;
+    this.livestream = config.livestream;
 
     if(wssUrlSwitch === 'local')
     {

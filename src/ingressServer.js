@@ -23,7 +23,7 @@ var logger = new logger(),
 
 // set CDN and server configuration
 wsLivestream.initLoggingServerConnection(process.argv[2]);
-wsLivestream.initIngressServer(process.argv[2], process.argv[3], 'data/dashsegments/');
+wsLivestream.initIngressServer(process.argv[2], process.argv[3]);
 
 // init webserver
 var app = express();
@@ -113,7 +113,7 @@ else
 // functions
 function startWatcher()
 {
-    fs.watch(wsLivestream.dashSegmentsPath, { persistent: true, interval: 1000 }, function(curr, prev)
+    fs.watch(wsLivestream.dashSegmentPath, { persistent: true, interval: 1000 }, function(curr, prev)
     {
         if(wsLivestream.doBroadcasting) {
             broadcast();
@@ -123,7 +123,7 @@ function startWatcher()
 
 function broadcast()
 {
-    mostRecentFile = wsLivestream.getMostRecentFile(wsLivestream.dashSegmentsPath, /webcam_part\d+_dashinit\.mp4/i);
+    mostRecentFile = wsLivestream.getMostRecentFile(wsLivestream.dashSegmentPath, wsLivestream.dashSegmentRegExp);
 
     if (typeof mostRecentFile === 'string')
     {
@@ -140,7 +140,7 @@ function broadcast()
             wsLivestream.updateLastBroadcastElement();
             sendLog(logger.logSegmentBroadcasting(wsLivestream.name, wsLivestream.broadcastQueue[0]));
 
-            var readStream = fs.createReadStream(wsLivestream.dashSegmentsPath + wsLivestream.broadcastQueue[0]);
+            var readStream = fs.createReadStream(wsLivestream.dashSegmentPath + wsLivestream.broadcastQueue[0]);
 
             readStream.on('data', function(data)
             {
