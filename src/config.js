@@ -22,12 +22,15 @@ config.edge = {};
 config.loggingServer = {};
 
 // wss urls + ports
+// OB
 config.ingress1.wssUrl  = '192.168.178.45';
 config.ingress1.wssPort = '8001';
 
+// OK
 config.ingress2.wssUrl  = '192.168.178.37';
 config.ingress2.wssPort = '8002';
 
+// Pi2 - OK
 config.intermediate11.wssUrl  = '192.168.178.44';
 config.intermediate11.wssPort = '8011';
 config.intermediate11.wsUrl   = config.ingress1.wssUrl;
@@ -37,6 +40,7 @@ config.intermediate12.wssPort = '8012';
 config.intermediate12.wsUrl   = config.ingress2.wssUrl;
 config.intermediate12.wsPort  = config.ingress2.wssPort;
 
+// Pi2 - OB
 config.intermediate21.wssUrl  = '192.168.178.39';
 config.intermediate21.wssPort = '8013';
 config.intermediate21.wsUrl   = config.intermediate11.wssUrl;
@@ -46,6 +50,7 @@ config.intermediate22.wssPort = '8014';
 config.intermediate22.wsUrl   = config.intermediate12.wssUrl;
 config.intermediate22.wsPort  = config.intermediate12.wssPort;
 
+// Pi2 - HH
 config.intermediate31.wssUrl  = '192.168.178.47';
 config.intermediate31.wssPort = '8015';
 config.intermediate31.wsUrl   = config.intermediate21.wssUrl;
@@ -55,6 +60,7 @@ config.intermediate32.wssPort = '8016';
 config.intermediate32.wsUrl   = config.intermediate22.wssUrl;
 config.intermediate32.wsPort  = config.intermediate22.wssPort;
 
+// Pi3 - OK
 config.edge.wssUrl  = '192.168.178.34';
 config.edge.wssPort = '8020';
 config.edge.wsUrl1  = config.intermediate31.wssUrl;
@@ -62,6 +68,7 @@ config.edge.wsPort1 = config.intermediate31.wssPort;
 config.edge.wsUrl2  = config.intermediate32.wssUrl;
 config.edge.wsPort2 = config.intermediate32.wssPort;
 
+// HH
 config.loggingServer.wssUrl = '192.168.178.43';
 config.loggingServer.wssPort = '8900';
 

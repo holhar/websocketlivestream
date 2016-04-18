@@ -484,7 +484,7 @@ websocketlivestream.prototype.initIntermediateServer = function(wssUrlSwitch, ws
  */
 websocketlivestream.prototype.initLoggingServer = function(wssUrlSwitch)
 {
-    this.name = 'LOGGINER-SERVER';
+    this.name = 'LOGGING-SERVER';
     this.wssPort = config.loggingServer.wssPort;
 
     if(wssUrlSwitch === 'local') {
