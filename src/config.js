@@ -14,10 +14,6 @@ config.ingress1 = {};
 config.ingress2 = {};
 config.intermediate11 = {};
 config.intermediate12 = {};
-config.intermediate22 = {};
-config.intermediate21 = {};
-config.intermediate31 = {};
-config.intermediate32 = {};
 config.edge = {};
 config.loggingServer = {};
 
@@ -42,13 +38,12 @@ config.intermediate12.wssPort = '8012';
 config.intermediate12.wsUrl   = config.ingress2.wssUrl;
 config.intermediate12.wsPort  = config.ingress2.wssPort;
 
-// Pi3 - OK
 config.edge.wssUrl  = '192.168.180.22';
 config.edge.wssPort = '8020';
-config.edge.wsUrl1  = config.intermediate31.wssUrl;
-config.edge.wsPort1 = config.intermediate31.wssPort;
-config.edge.wsUrl2  = config.intermediate32.wssUrl;
-config.edge.wsPort2 = config.intermediate32.wssPort;
+config.edge.wsUrl1  = config.intermediate11.wssUrl;
+config.edge.wsPort1 = config.intermediate11.wssPort;
+config.edge.wsUrl2  = config.intermediate12.wssUrl;
+config.edge.wsPort2 = config.intermediate12.wssPort;
 
 // filenames
 config.filenames.mpgSegmentRegExp = /webcam_part\d+\.mpg/i;
