@@ -12,7 +12,8 @@
 ### Intermediate Device
 
 * `$ cd path/to/websocketlivestream/src/scripts/`
-* `$ ./serverStart.sh network intermediate 1`
+* `$ ./serverStart.sh network intermediate 11`
+* `$ ./serverStart.sh network intermediate 12`
 
 ### Edge Device
 
